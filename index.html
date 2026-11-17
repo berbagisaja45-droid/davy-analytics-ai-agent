@@ -46,6 +46,24 @@
 <header class="top"><div class="brand"><div class="logo">DA</div><div><h1>Davy Analytics AI Agent</h1><p>Multi-business digital command center</p></div></div><span class="badge">PROTOTIPE v1.1</span></header>
 <section class="hero"><div class="eyebrow">AI BUSINESS OPERATING SYSTEM</div><h2>Satu dashboard untuk mengubah ide menjadi pekerjaan nyata.</h2><p>Kelola produk digital, catat pesanan dan transaksi, serta gunakan enam agen AI untuk mendukung riset, analitik, intelijen bisnis, pemasaran, pendapatan, dan persetujuan manusia.</p><button class="btn primary" onclick="openOrderForm()">＋ Catat pesanan</button> <button class="btn secondary" onclick="document.querySelector('#agents').scrollIntoView({behavior:'smooth'})">Lihat agen AI</button></section>
 
+
+<style>
+/* Integrated dashboard directory */
+.app-hub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 24px}
+.app-link{display:flex;flex-direction:column;gap:9px;text-decoration:none;color:var(--txt);transition:transform .18s,border-color .18s}
+.app-link:hover{transform:translateY(-2px);border-color:var(--cyan)}
+.app-link .app-icon{font-size:27px}.app-link h4{margin:0;font-size:15px}.app-link p{margin:0;color:#b5c0df;font-size:12px;line-height:1.55;flex:1}
+.app-link .launch{color:var(--cyan);font-weight:700;font-size:12px}
+@media(max-width:760px){.app-hub{grid-template-columns:1fr}}
+</style>
+<div class="head" id="dashboardHub"><h3>Ekosistem Dashboard &amp; Aplikasi</h3><p>Pintu masuk terpusat ke aplikasi dan dashboard digital. Setiap aplikasi tetap berjalan pada situs asalnya agar fitur, basis data, dan autentikasi masing-masing tidak terganggu.</p></div>
+<section class="app-hub" aria-label="Dashboard dan aplikasi terintegrasi">
+<a class="card app-link" href="https://davyhendri74-crypto.github.io/davy-analytics-ai-agent/" target="_blank" rel="noopener noreferrer"><div class="app-icon">🤖</div><span class="tag">PUSAT KENDALI</span><h4>Davy Analytics AI Agent</h4><p>Dashboard utama untuk agen AI, riset, analitik, katalog digital, pesanan, dan layanan profesional.</p><span class="launch">Buka dashboard utama ↗</span></a>
+<a class="card app-link" href="https://berbagisaja45-droid.github.io/balai-gadang-dalam-angka" target="_blank" rel="noopener noreferrer"><div class="app-icon">📊</div><span class="tag">DATA WILAYAH</span><h4>Balai Gadang dalam Angka</h4><p>Portal data dan indikator wilayah untuk membaca profil, kondisi, serta perkembangan Balai Gadang.</p><span class="launch">Buka dashboard ↗</span></a>
+<a class="card app-link" href="https://berbagisaja45-droid.github.io/criminologylab" target="_blank" rel="noopener noreferrer"><div class="app-icon">🔎</div><span class="tag">RISET KRIMINOLOGI</span><h4>Criminology Lab</h4><p>Portal observatorium kriminalitas untuk eksplorasi data, analisis kuantitatif, dan pengetahuan kriminologi.</p><span class="launch">Buka laboratorium ↗</span></a>
+<a class="card app-link" href="https://davyhendri74-crypto.github.io/battle-of-choices/" target="_blank" rel="noopener noreferrer"><div class="app-icon">🎮</div><span class="tag">EDUKASI INTERAKTIF</span><h4>Battle of Choices</h4><p>Game pembelajaran pengambilan keputusan, perilaku pilihan, dan interpretasi Multinomial Logit.</p><span class="launch">Buka aplikasi ↗</span></a>
+</section>
+
 <div class="head"><h3>Tahap 2 · Katalog Digital Solutions</h3><p>Katalog awal buku, modul, game edukasi, aplikasi, peta, video AI, serta layanan profesional. Status pengembangan dicantumkan agar produk prototipe tidak disalahartikan sebagai produk final.</p></div>
 <section class="catalog">
 <article class="card product"><div class="icon">📘</div><span class="tag">Buku terbit</span><h4>Teori Permainan (Game Theory)</h4><p><em>Analisis Strategis untuk Ekonomi, Bisnis, dan Ekonomi Syariah.</em> Diterbitkan Rajawali Pers, cetakan pertama September 2026.</p><p><strong>ISBN:</strong> 978-623-08-2671-9</p><div class="price">Harga: Rp150.000</div><details class="book-excerpt" style="margin:12px 0;padding:11px;background:#0d1528;border:1px solid #34405f;border-radius:10px">
