@@ -181,11 +181,75 @@
 <a class="card app-link" href="https://berbagisaja45-droid.github.io/criminologylab" target="_blank" rel="noopener noreferrer"><div class="app-icon">🔎</div><span class="tag">RISET KRIMINOLOGI</span><h4>Criminology Lab</h4><p>Observatorium kriminalitas, analisis kuantitatif, dan modul simulasi sistem peradilan pidana.</p><span class="launch">Buka dashboard ↗</span></a>
 <a class="card app-link" href="https://berbagisaja45-droid.github.io/nusantara-export-hub" target="_blank" rel="noopener noreferrer"><div class="app-icon">🌏</div><span class="tag">PERDAGANGAN &amp; EKSPOR</span><h4>Nusantara Export Hub</h4><p>Dashboard pengembangan dan pengelolaan informasi produk ekspor Nusantara.</p><span class="launch">Buka dashboard ↗</span></a>
 </section></section>
-<section class="portal-screen" id="interactiveGames"><div class="head"><h3>Game &amp; Simulasi Interaktif</h3><p>Seluruh game dalam satu layar. APK Android dapat diperoleh dengan menghubungi pemilik melalui WhatsApp: Davy Hendri.</p></div>
-<section class="game-preview-grid" aria-label="Game interaktif">
- <article class="game-preview"><span class="tag">GAME WEB · INTERAKTIF</span><h4>🎮 Battle of Choices</h4><p>Game pilihan, profil responden, prediksi keputusan, dan pembelajaran Multinomial Logit.</p><details><summary>▶ Buka cuplikan permainan</summary><iframe class="game-frame" src="https://davyhendri74-crypto.github.io/battle-of-choices/" title="Battle of Choices" loading="lazy" allow="fullscreen"></iframe><div class="game-actions"><a class="btn primary" href="https://davyhendri74-crypto.github.io/battle-of-choices/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Buka game penuh ↗</a></div></details></article>
- <article class="game-preview mudharabah-playable"><span class="tag">GAME EDUKASI · WEB PLAYABLE</span><h4>🤝 Mudharabah Contract Game</h4><p>Simulasi kontrak bank–nasabah: pilih nisbah, tipe nasabah, dan tingkat usaha. Jalankan usaha lalu evaluasi pembagian hasil, risiko, serta insentif.</p><div class="mud-game" id="mudGame"><div class="mud-game-head"><b>SIMULASI AKAD MUDHARABAH</b><span id="mudRound">Ronde 1</span></div><div class="mud-game-controls"><label>Peran pemain<select id="mudRole"><option value="bank">Shahibul Maal (Bank)</option><option value="customer">Mudharib (Nasabah)</option></select></label><label>Tipe nasabah<select id="mudType"><option value="trust">Amanah</option><option value="opportunist">Oportunis</option></select></label><label>Nisbah bank (%)<input id="mudShare" type="number" min="10" max="90" value="40"></label><label>Usaha nasabah<select id="mudEffort"><option value="high">High effort</option><option value="low">Low effort</option></select></label><label>Modal bank (Rp)<input id="mudCapital" type="number" min="1000000" step="1000000" value="10000000"></label><label>Hasil usaha<select id="mudOutcome"><option value="success">Usaha berhasil</option><option value="failure">Usaha gagal (kerugian bisnis)</option></select></label></div><div class="mud-game-actions"><button class="btn primary" type="button" onclick="playMudharabah()">▶ Jalankan ronde</button><button class="btn secondary" type="button" onclick="resetMudharabah()">↺ Reset</button></div><div class="mud-result" id="mudResult" aria-live="polite"><b>Siap bermain.</b> Pilih parameter kontrak, lalu jalankan ronde untuk melihat hasil simulasi.</div><div class="mud-learning" id="mudLearning">Tujuan: memahami bagaimana nisbah, usaha, tipe nasabah, dan risiko memengaruhi insentif serta hasil akad.</div></div></article> <article class="game-preview crime-playable"><span class="tag">SIMULASI KEBIJAKAN · INTERAKTIF</span><h4>⚖️ Criminology Policy Simulation</h4><p>Hanya modul Game &amp; Simulasi—bukan seluruh dashboard Criminology Lab. Pilih skenario dan alokasikan anggaran untuk empat aktor sistem peradilan.</p><div class="crime-game"><div class="crime-controls"><label>Skenario<select id="crimeScenario"><option value="low">Rendah — pengenalan aktor</option><option value="medium" selected>Menengah — tekanan kriminalitas moderat</option><option value="high">Tinggi — tekanan kriminalitas tinggi</option></select></label><label>Anggaran<input id="crimeBudget" type="number" min="0" max="100" value="82"></label></div><div class="crime-actors"><label>Polisi <input type="range" id="crimePolice" min="0" max="100" value="25"></label><label>Jaksa <input type="range" id="crimeProsecutor" min="0" max="100" value="20"></label><label>Hakim <input type="range" id="crimeJudge" min="0" max="100" value="20"></label><label>Pemasyarakatan <input type="range" id="crimeCorrections" min="0" max="100" value="17"></label></div><div class="crime-actions"><button class="btn primary" type="button" onclick="runCrimeSimulation()">▶ Jalankan simulasi</button><button class="btn secondary" type="button" onclick="resetCrimeSimulation()">↺ Reset</button></div><div id="crimeResult" class="crime-result">Alokasikan anggaran ke empat aktor, lalu jalankan simulasi.</div></div></article></section></section>
-</section>
+<style>
+/* Game & Simulasi showcase — isolated section only */
+.games-showcase{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:16px 0 28px}
+.game-showcase-card{border:1px solid #c7d9e8;border-radius:22px;overflow:hidden;background:linear-gradient(145deg,#123c63,#0d2946);color:#f4f8ff;box-shadow:0 12px 30px rgba(15,47,78,.16)}
+.game-showcase-head{padding:22px 22px 14px;background:linear-gradient(120deg,#0c3156,#17648b);position:relative}
+.game-showcase-head .game-kicker{font-size:10px;letter-spacing:1.5px;font-weight:800;color:#7ee7f1}
+.game-showcase-head h3{font-size:clamp(20px,2.2vw,28px);margin:8px 0 5px;color:#fff}
+.game-showcase-head p{margin:0;color:#d7e9f8;font-size:12px;line-height:1.5}
+.game-avatar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 18px;background:#09233d}
+.game-avatar{width:48px;height:48px;border:2px solid #63dce7;border-radius:13px;overflow:hidden;background:#e6f0fa;box-shadow:0 3px 12px #0003}
+.game-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.game-avatar-label{font-size:10px;color:#c9e7f6;text-align:center;margin-top:3px}
+.game-avatar-wrap{width:52px}
+.game-preview-body{padding:16px 18px}
+.game-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.game-feature{border:1px solid #4a7190;background:#143a5b;border-radius:12px;padding:10px;font-size:11px;color:#e5f2fc;line-height:1.45}
+.game-feature strong{display:block;color:#76e3ee;margin-bottom:3px;font-size:11px}
+.game-showcase-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.game-showcase-actions a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.game-showcase-card .btn.primary{background:linear-gradient(100deg,#35b8dc,#7de9e3);color:#09233d;border:0}
+.game-showcase-card .btn.secondary{background:#183f62;color:#eaf6ff;border:1px solid #5b82a0}
+.game-mini-status{margin-top:10px;font-size:10px;color:#a9c9df}
+.game-simulation-details{margin-top:14px;border:1px solid #4b7291;border-radius:12px;background:#0d2b48;padding:12px}
+.game-simulation-details summary{cursor:pointer;color:#7de5ef;font-size:12px;font-weight:700}
+.game-simulation-details .mud-game,.game-simulation-details .crime-game{background:#f5f8fc;color:#14243b}
+@media(max-width:760px){.games-showcase{grid-template-columns:1fr}.game-feature-grid{grid-template-columns:1fr}.game-avatar{width:42px;height:42px}.game-avatar-wrap{width:46px}}
+</style>
+<section class="portal-screen" id="interactiveGames">
+<div class="head"><h3>Game &amp; Simulasi Interaktif</h3><p>Belajar melalui permainan, avatar pemain, pengambilan keputusan, dan simulasi berbasis skenario.</p></div>
+<div class="games-showcase">
+<article class="game-showcase-card">
+<div class="game-showcase-head"><div class="game-kicker">EDUCATIONAL GAME · ISLAMIC FINANCE</div><h3>🤝 Mudharabah Game</h3><p>Learning Islamic Finance Through Decisions</p></div>
+<div class="game-avatar-row" aria-label="Avatar pemain Mudharabah">
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_zahra.png" alt="Avatar Zahra"></div><div class="game-avatar-label">Zahra</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_rafi.png" alt="Avatar Rafi"></div><div class="game-avatar-label">Rafi</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_mira.png" alt="Avatar Mira"></div><div class="game-avatar-label">Mira</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_rizal.png" alt="Avatar Rizal"></div><div class="game-avatar-label">Rizal</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_lina.png" alt="Avatar Lina"></div><div class="game-avatar-label">Lina</div></div>
+</div>
+<div class="game-preview-body"><div class="game-feature-grid">
+<div class="game-feature"><strong>🎯 Pilihan Kontrak</strong>Nisbah bagi hasil, peran bank dan nasabah, serta tipe perilaku.</div>
+<div class="game-feature"><strong>📈 Simulasi Usaha</strong>High/low effort, hasil usaha, keuntungan, dan risiko kerugian.</div>
+<div class="game-feature"><strong>🧠 Decision Analysis</strong>Evaluasi insentif, fairness, payoff, dan trade-off.</div>
+<div class="game-feature"><strong>🏆 Learning Outcomes</strong>Memahami prinsip Mudharabah melalui keputusan interaktif.</div>
+</div>
+<div class="game-showcase-actions"><a class="btn primary" href="#mudharabah-preview" onclick="document.getElementById('mudharabah-preview').open=true">▶ Coba cuplikan</a><a class="btn secondary" href="https://davyhendri74-crypto.github.io/battle-of-choices/" target="_blank" rel="noopener">Avatar &amp; game reference ↗</a></div>
+<div class="game-mini-status">Preview simulasi edukasi tersedia di bawah; parameter bersifat ilustratif.</div>
+<details class="game-simulation-details" id="mudharabah-preview"><summary>▶ Buka simulasi Mudharabah</summary><div class="mud-game" id="mudGame"><div class="mud-game-head"><b>SIMULASI AKAD MUDHARABAH</b><span id="mudRound">Ronde 1</span></div><div class="mud-game-controls"><label>Peran pemain<select id="mudRole"><option value="bank">Shahibul Maal (Bank)</option><option value="customer">Mudharib (Nasabah)</option></select></label><label>Tipe nasabah<select id="mudType"><option value="trust">Amanah</option><option value="opportunist">Oportunis</option></select></label><label>Nisbah bank (%)<input id="mudShare" type="number" min="10" max="90" value="40"></label><label>Usaha nasabah<select id="mudEffort"><option value="high">High effort</option><option value="low">Low effort</option></select></label><label>Modal bank (Rp)<input id="mudCapital" type="number" min="1000000" step="1000000" value="10000000"></label><label>Hasil usaha<select id="mudOutcome"><option value="success">Usaha berhasil</option><option value="failure">Usaha gagal (kerugian bisnis)</option></select></label></div><div class="mud-game-actions"><button class="btn primary" type="button" onclick="playMudharabah()">▶ Jalankan ronde</button><button class="btn secondary" type="button" onclick="resetMudharabah()">↺ Reset</button></div><div class="mud-result" id="mudResult" aria-live="polite"><b>Siap bermain.</b> Pilih parameter kontrak, lalu jalankan ronde untuk melihat hasil simulasi.</div><div class="mud-learning" id="mudLearning">Tujuan: memahami bagaimana nisbah, usaha, tipe nasabah, dan risiko memengaruhi insentif serta hasil akad.</div></div></details>
+</div></article>
+<article class="game-showcase-card">
+<div class="game-showcase-head"><div class="game-kicker">CRIMINOLOGY · POLICY SIMULATION</div><h3>⚖️ Criminology Lab</h3><p>Interactive Crime &amp; Policy Simulation</p></div>
+<div class="game-avatar-row" aria-label="Avatar preview">
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_zahra.png" alt="Avatar pemain"></div><div class="game-avatar-label">Player 1</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_rafi.png" alt="Avatar pemain"></div><div class="game-avatar-label">Player 2</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_mira.png" alt="Avatar pemain"></div><div class="game-avatar-label">Player 3</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_rizal.png" alt="Avatar pemain"></div><div class="game-avatar-label">Player 4</div></div>
+<div class="game-avatar-wrap"><div class="game-avatar"><img src="https://davyhendri74-crypto.github.io/battle-of-choices/assets/avatar_lina.png" alt="Avatar pemain"></div><div class="game-avatar-label">Player 5</div></div>
+</div>
+<div class="game-preview-body"><div class="game-feature-grid">
+<div class="game-feature"><strong>🗺️ Crime Scenario</strong>Eksplorasi skenario, tingkat kriminalitas, dan kondisi wilayah.</div>
+<div class="game-feature"><strong>⚖️ Policy Choices</strong>Alokasi intervensi Polisi, Jaksa, Hakim, dan Pemasyarakatan.</div>
+<div class="game-feature"><strong>📊 Impact Simulation</strong>Evaluasi trade-off anggaran, risiko, dan dampak kebijakan.</div>
+<div class="game-feature"><strong>💡 Reflection</strong>Belajar analisis kriminalitas dan pencegahan berbasis bukti.</div>
+</div>
+<div class="game-showcase-actions"><a class="btn primary" href="https://berbagisaja45-droid.github.io/criminologylab/" target="_blank" rel="noopener">▶ Explore Criminology Lab ↗</a><a class="btn secondary" href="#criminology-preview" onclick="document.getElementById('criminology-preview').open=true">Coba simulasi kebijakan</a></div>
+<div class="game-mini-status">Portal Criminology Lab terbuka di tab baru; cuplikan kebijakan tersedia di bawah.</div>
+<details class="game-simulation-details" id="criminology-preview"><summary>▶ Buka simulasi kebijakan</summary><div class="crime-game"><div class="crime-controls"><label>Skenario<select id="crimeScenario"><option value="low">Rendah — pengenalan aktor</option><option value="medium" selected>Menengah — tekanan kriminalitas moderat</option><option value="high">Tinggi — tekanan kriminalitas tinggi</option></select></label><label>Anggaran<input id="crimeBudget" type="number" min="0" max="100" value="82"></label></div><div class="crime-actors"><label>Polisi <input type="range" id="crimePolice" min="0" max="100" value="25"></label><label>Jaksa <input type="range" id="crimeProsecutor" min="0" max="100" value="20"></label><label>Hakim <input type="range" id="crimeJudge" min="0" max="100" value="20"></label><label>Pemasyarakatan <input type="range" id="crimeCorrections" min="0" max="100" value="17"></label></div><div class="crime-actions"><button class="btn primary" type="button" onclick="runCrimeSimulation()">▶ Jalankan simulasi</button><button class="btn secondary" type="button" onclick="resetCrimeSimulation()">↺ Reset</button></div><div id="crimeResult" class="crime-result">Alokasikan anggaran ke empat aktor, lalu jalankan simulasi.</div></div></details>
+</div></article>
+</div></section>
 <section class="portal-screen" id="catalog"><div class="head"><h3>Tahap 2 · Katalog Digital Solutions</h3><p>Katalog awal buku, modul, game edukasi, aplikasi, peta, video AI, serta layanan profesional. Status pengembangan dicantumkan agar produk prototipe tidak disalahartikan sebagai produk final.</p></div>
 <section class="catalog">
 
