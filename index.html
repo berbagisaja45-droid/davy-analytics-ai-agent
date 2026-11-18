@@ -86,6 +86,18 @@
 .creator-card .creator-tags span{color:#d7efff!important;border-color:#a4d5ed!important}
 .creator-card .tag{background:rgba(255,255,255,.9);color:#244866}
 @media(max-width:700px){.screen-mode .app>section.screen-active.creator-card{padding:16px!important;min-height:500px!important;flex-direction:column!important;gap:12px}.creator-card .creator-info{padding:16px}.creator-map-shade{background:rgba(12,25,43,.68)}}
+/* Creator feature expanded with campus OpenStreetMap background */
+.creator-card#creatorProfile{position:relative!important;min-height:500px!important;height:500px!important;max-height:none!important;width:100%;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:28px!important;padding:42px!important;border-radius:24px!important}
+.creator-card#creatorProfile .creator-map-bg{position:absolute!important;inset:0!important;opacity:.92!important}
+.creator-card#creatorProfile .creator-map-bg iframe{width:100%!important;height:100%!important;filter:saturate(1.05)!important}
+.creator-card#creatorProfile .creator-map-shade{background:linear-gradient(90deg,rgba(8,22,39,.88),rgba(8,22,39,.68) 58%,rgba(8,22,39,.20))!important}
+.creator-card#creatorProfile .creator-avatar{width:136px!important;height:136px!important;flex:0 0 136px!important;z-index:2!important;align-self:center!important}
+.creator-card#creatorProfile .creator-info{max-width:850px!important;padding:30px!important}
+.creator-card#creatorProfile .creator-info h3{font-size:clamp(24px,3vw,34px)!important;margin:8px 0 14px!important}
+.creator-card#creatorProfile .creator-info p{font-size:15px!important;line-height:1.65!important}
+.creator-card#creatorProfile .creator-tags{margin:14px 0!important}
+.creator-card#creatorProfile .creator-cta{font-size:15px!important}
+@media(max-width:700px){.creator-card#creatorProfile{min-height:620px!important;height:auto!important;padding:24px!important;flex-direction:column!important;justify-content:center!important;gap:16px!important}.creator-card#creatorProfile .creator-avatar{width:110px!important;height:110px!important;flex:0 0 110px!important}.creator-card#creatorProfile .creator-info{padding:20px!important}}
 </style>
 </head>
 <body><main class="app">
