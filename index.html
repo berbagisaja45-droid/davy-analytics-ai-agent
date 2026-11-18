@@ -113,7 +113,7 @@
 /* Creator profile: glass panel, draggable by visitors */
 .creator-card#creatorProfile .creator-info{background:rgba(8,24,44,.24)!important;backdrop-filter:blur(1px)!important;border:1px solid rgba(255,255,255,.30)!important;box-shadow:0 8px 24px rgba(8,22,39,.12)!important;cursor:grab!important;touch-action:none!important}
 .creator-card#creatorProfile .creator-info.dragging{cursor:grabbing!important;background:rgba(8,24,44,.32)!important}
-.creator-card#creatorProfile .creator-info::before{content:'↔ Geser kotak profil untuk melihat peta';display:block;font-size:11px;opacity:.8;margin-bottom:8px;color:#fff}
+.
 .creator-card#creatorProfile .creator-info{color:#fff!important}
 .creator-card#creatorProfile .creator-map-shade{background:linear-gradient(90deg,rgba(8,22,39,.08),rgba(8,22,39,.02) 55%,rgba(8,22,39,0))!important}
 .order-send-note{margin-top:10px;padding:12px;border-radius:10px;background:#eaf4fb;color:#244866;font-size:12px;line-height:1.5}
@@ -314,6 +314,8 @@ function saveOrders(){localStorage.setItem(ORDER_KEY,JSON.stringify(orders))}
 function openOrderForm(){
  const section=el('orderSection');
  if(!section)return;
+ const catalogLink=document.querySelector('.main-nav a[href="#catalog"]');
+ if(catalogLink)catalogLink.click();
  section.style.display='block';
  section.scrollIntoView({behavior:'smooth',block:'start'});
  el('orderCustomer').focus();
@@ -582,10 +584,10 @@ renderConversation('research');
 (function(){
  const nav=document.querySelector('.main-nav'); if(!nav)return;
  const links=[...nav.querySelectorAll('a')];
- const screens={dashboardHub:['dashboardHub'],interactiveGames:['interactiveGames'],creatorProfile:['creatorProfile'],agents:['agents'],catalog:['catalog']};
+ const screens={dashboardHub:['dashboardHub'],interactiveGames:['interactiveGames'],creatorProfile:['creatorProfile'],agents:['agents'],catalog:['catalog','orderSection']};
  function activate(id){document.body.classList.add('screen-mode');for(const s of document.querySelectorAll('.app>section'))s.classList.remove('screen-active');const ids=screens[id]||['dashboardHub'];ids.forEach(x=>document.getElementById(x)?.classList.add('screen-active'));links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:'instant'});}
  links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();activate(a.getAttribute('href').slice(1));}));
- const initial=location.hash.slice(1);activate(screens[initial]?initial:'dashboardHub');
+ const initial=location.hash.slice(1);activate(screens[initial]?initial:'creatorProfile');
 })();
 
 function playMudharabah(){const role=document.getElementById('mudRole').value,type=document.getElementById('mudType').value,share=Number(document.getElementById('mudShare').value),effort=document.getElementById('mudEffort').value,capital=Number(document.getElementById('mudCapital').value),outcome=document.getElementById('mudOutcome').value;const box=document.getElementById('mudResult');if(share<10||share>90||capital<=0){box.innerHTML='<b>Parameter tidak valid.</b> Nisbah bank 10–90% dan modal harus positif.';return}const bankShare=share/100,profitRate=(outcome==='failure'?-.25:(effort==='high'?.30:.12));const gross=capital*profitRate;let bankGain,customerGain,bankTotal,customerNote;if(outcome==='failure'){bankGain=gross;customerGain=0;bankTotal=capital+bankGain;customerNote='Kerugian usaha ditanggung pemilik modal sepanjang bukan akibat kelalaian atau pelanggaran mudharib.'}else{bankGain=gross*bankShare;customerGain=gross*(1-bankShare);bankTotal=capital+bankGain;customerNote='Keuntungan dibagi sesuai nisbah yang disepakati.'}const incentive=(type==='trust'?'Tipe amanah cenderung menjalankan usaha sesuai kesepakatan.':'Tipe oportunis berpotensi memilih usaha rendah bila insentif tidak cukup kuat.');const roleNote=role==='bank'?'Anda sebagai Bank/Shahibul Maal: perhatikan return, risiko modal, dan kelayakan kontrak.':'Anda sebagai Nasabah/Mudharib: perhatikan imbalan usaha, risiko, dan insentif effort.';box.innerHTML='<b>Hasil ronde</b><br>'+roleNote+'<br>Modal: Rp '+capital.toLocaleString('id-ID')+'<br>Hasil usaha: '+(outcome==='failure'?'Rugi 25%':(effort==='high'?'Untung 30%':'Untung 12%'))+'<br>Bagian bank: '+(outcome==='failure'?'Rp '+bankGain.toLocaleString('id-ID'):'Rp '+bankGain.toLocaleString('id-ID'))+'<br>Bagian nasabah: Rp '+customerGain.toLocaleString('id-ID')+'<br>Nilai akhir modal bank (simulasi): Rp '+bankTotal.toLocaleString('id-ID')+'<br><br>'+customerNote+'<br><b>Insight:</b> '+incentive+' '+(effort==='high'?'High effort meningkatkan peluang hasil usaha pada model ilustratif ini.':'Low effort menghasilkan profit lebih rendah pada model ilustratif ini.');document.getElementById('mudLearning').textContent='Catatan: angka merupakan parameter ilustratif untuk pembelajaran, bukan estimasi empiris atau rekomendasi kontrak.';document.getElementById('mudRound').textContent='Ronde selesai';}
@@ -593,12 +595,5 @@ function resetMudharabah(){document.getElementById('mudRole').value='bank';docum
 function runCrimeSimulation(){const scenario=document.getElementById('crimeScenario').value,budget=Number(document.getElementById('crimeBudget').value),vals=['crimePolice','crimeProsecutor','crimeJudge','crimeCorrections'].map(id=>Number(document.getElementById(id).value));const sum=vals.reduce((a,b)=>a+b,0),base={low:35,medium:58,high:78}[scenario];if(sum>budget){document.getElementById('crimeResult').innerHTML='<b>Anggaran melebihi batas.</b> Total alokasi '+sum+' dari anggaran '+budget+'. Kurangi alokasi.';return}const weights=[.28,.22,.20,.30],score=vals.reduce((s,v,i)=>s+v*weights[i],0);const index=Math.max(0,Math.min(100,base-score*.35));const probability=Math.max(1,Math.min(95,index*.72));document.getElementById('crimeResult').innerHTML='<b>Hasil simulasi (ilustratif)</b><br>Anggaran terpakai: '+sum+' / '+budget+' poin<br>Indeks tekanan kriminalitas: <b>'+index.toFixed(1)+'</b><br>Probabilitas indikator kriminalitas: <b>'+probability.toFixed(1)+'%</b><br>Intervensi paling besar: '+['Polisi','Jaksa','Hakim','Pemasyarakatan'][vals.indexOf(Math.max(...vals))]+'<br><small>Model prototipe untuk eksplorasi trade-off, bukan estimasi atau prediksi kriminalitas nyata.</small>'}
 function resetCrimeSimulation(){document.getElementById('crimeScenario').value='medium';document.getElementById('crimeBudget').value=82;['crimePolice','crimeProsecutor','crimeJudge','crimeCorrections'].forEach((id,i)=>document.getElementById(id).value=[25,20,20,17][i]);document.getElementById('crimeResult').textContent='Alokasikan anggaran ke empat aktor, lalu jalankan simulasi.'}
 
-// Allow visitors to move the translucent Creator profile panel to reveal map details.
-(function(){const panel=document.querySelector('#creatorProfile .creator-info');if(!panel)return;let active=false,sx=0,sy=0,tx=0,ty=0;panel.addEventListener('pointerdown',e=>{if(e.target.closest('a,button,input,select,textarea'))return;active=true;sx=e.clientX;sy=e.clientY;panel.setPointerCapture(e.pointerId);panel.classList.add('dragging');e.preventDefault()});panel.addEventListener('pointermove',e=>{if(!active)return;tx+=e.clientX-sx;ty+=e.clientY-sy;sx=e.clientX;sy=e.clientY;panel.style.transform='translate('+tx+'px,'+ty+'px)'});panel.addEventListener('pointerup',()=>{active=false;panel.classList.remove('dragging')});panel.addEventListener('pointercancel',()=>{active=false;panel.classList.remove('dragging')})})();
 </script></body></html>
 
-/* Creator: transparent profile panel to reveal the OSM campus map */
-.creator-card#creatorProfile .creator-map-bg{opacity:1!important}
-.creator-card#creatorProfile .creator-map-bg iframe{filter:saturate(1.2) contrast(1.04)!important}
-.creator-card#creatorProfile .creator-map-shade{background:linear-gradient(90deg,rgba(8,22,39,.30),rgba(8,22,39,.18) 55%,rgba(8,22,39,.04))!important}
-.creator-card#creatorProfile .creator-info{background:rgba(10,28,48,.42)!important;backdrop-filter:blur(2px)!important;border:1px solid rgba(255,255,255,.20)!important;box-shadow:0 8px 30px rgba(8,22,39,.16)!important}
