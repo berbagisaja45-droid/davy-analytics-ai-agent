@@ -152,6 +152,26 @@
 .app-link .app-icon{font-size:27px}.app-link h4{margin:0;font-size:15px}.app-link p{margin:0;color:#b5c0df;font-size:12px;line-height:1.55;flex:1}
 .app-link .launch{color:var(--cyan);font-weight:700;font-size:12px}
 @media(max-width:760px){.app-hub{grid-template-columns:1fr}}
+/* Tahap 1: visual consistency, responsive navigation and platform cards */
+.main-nav{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin;overscroll-behavior-x:contain}
+.main-nav a{white-space:nowrap;flex:0 0 auto;transition:background .18s,color .18s,border-color .18s}
+.main-nav a.active{background:#246487;color:#fff;border-color:#246487}
+.main-nav a:focus-visible,.app-link:focus-visible,.btn:focus-visible{outline:3px solid #25a9d2;outline-offset:3px}
+.portal-screen .head h3{font-size:clamp(20px,2.4vw,27px);margin-bottom:6px}
+.portal-screen .head p{max-width:760px;line-height:1.6}
+.portal-screen .app-hub{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.portal-screen .app-link{min-height:205px;padding:20px;border-radius:18px}
+.portal-screen .app-link .app-icon{font-size:30px}
+.portal-screen .app-link h4{font-size:16px;line-height:1.35}
+.portal-screen .app-link p{font-size:12px;line-height:1.6}
+.app-link .launch{margin-top:auto;padding-top:5px}
+.game-showcase-card{height:100%;display:flex;flex-direction:column}
+.game-preview-body{flex:1;display:flex;flex-direction:column}
+.game-showcase-actions{margin-top:auto;padding-top:12px}
+.library-book{height:100%;display:flex;flex-direction:column}
+.library-book a{align-self:flex-start;margin-top:auto!important}
+@media(max-width:900px){.portal-screen .app-hub{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.app{padding:12px}.main-nav{margin:0 -12px 14px;padding:10px 12px}.portal-screen .app-hub{grid-template-columns:1fr}.portal-screen .app-link{min-height:0}.game-feature-grid{grid-template-columns:1fr}.game-showcase-head{padding:18px}.game-preview-body{padding:14px}}
 /* One viewport per portal section */
 .portal-screen{min-height:calc(100vh - 100px);display:flex;flex-direction:column;justify-content:flex-start;padding-bottom:18px}
 .portal-screen .head{margin-top:4px}
@@ -177,10 +197,11 @@
 </style>
 <section class="portal-screen" id="dashboardHub"><div class="head"><h3>Dashboard &amp; Platform</h3><p>Seluruh platform dalam satu layar. Pilih dashboard untuk membuka platform terkait.</p></div>
 <section class="app-hub" aria-label="Dashboard dan platform">
-<a class="card app-link" href="https://davyhendri74-crypto.github.io/davy-analytics-ai-agent/" target="_blank" rel="noopener noreferrer"><div class="app-icon">🤖</div><span class="tag">PUSAT KENDALI</span><h4>Davy Analytics AI Agent</h4><p>Dashboard utama untuk agen AI, riset, analitik, katalog digital, pesanan, dan layanan profesional.</p><span class="launch">Buka dashboard ↗</span></a>
-<a class="card app-link" href="https://berbagisaja45-droid.github.io/balai-gadang-dalam-angka" target="_blank" rel="noopener noreferrer"><div class="app-icon">📊</div><span class="tag">DATA WILAYAH</span><h4>Balai Gadang dalam Angka</h4><p>Portal data dan indikator wilayah Balai Gadang.</p><span class="launch">Buka dashboard ↗</span></a>
-<a class="card app-link" href="https://berbagisaja45-droid.github.io/criminologylab" target="_blank" rel="noopener noreferrer"><div class="app-icon">🔎</div><span class="tag">RISET KRIMINOLOGI</span><h4>Criminology Lab</h4><p>Observatorium kriminalitas, analisis kuantitatif, dan modul simulasi sistem peradilan pidana.</p><span class="launch">Buka dashboard ↗</span></a>
-<a class="card app-link" href="https://berbagisaja45-droid.github.io/nusantara-export-hub" target="_blank" rel="noopener noreferrer"><div class="app-icon">🌏</div><span class="tag">PERDAGANGAN &amp; EKSPOR</span><h4>Nusantara Export Hub</h4><p>Dashboard pengembangan dan pengelolaan informasi produk ekspor Nusantara.</p><span class="launch">Buka dashboard ↗</span></a>
+<a class="card app-link" href="https://berbagisaja45-droid.github.io/balai-gadang-dalam-angka" target="_blank" rel="noopener noreferrer"><div class="app-icon">📊</div><span class="tag">DATA WILAYAH</span><h4>Balai Gadang dalam Angka</h4><p>Portal data, statistik, dan indikator pembangunan wilayah Balai Gadang.</p><span class="launch">Buka platform ↗</span></a>
+<a class="card app-link" href="https://davyhendri74-crypto.github.io/balai-gadang-carbon/" target="_blank" rel="noopener noreferrer"><div class="app-icon">🌳</div><span class="tag">GIS &amp; LINGKUNGAN</span><h4>Balai Gadang Carbon</h4><p>Dashboard peta kawasan, tutupan lahan, inventarisasi, karbon, dan pengelolaan lanskap.</p><span class="launch">Buka platform ↗</span></a>
+<a class="card app-link" href="https://davyhendri74-crypto.github.io/battle-of-choices/" target="_blank" rel="noopener noreferrer"><div class="app-icon">🎮</div><span class="tag">GAME EDUKASI</span><h4>Battle of Choices</h4><p>Permainan pengambilan keputusan dan pembelajaran model pilihan multinomial.</p><span class="launch">Buka game ↗</span></a>
+<a class="card app-link" href="https://berbagisaja45-droid.github.io/criminologylab/" target="_blank" rel="noopener noreferrer"><div class="app-icon">⚖️</div><span class="tag">RISET KRIMINOLOGI</span><h4>Criminology Lab</h4><p>Observatorium kriminalitas, analisis kuantitatif, dan simulasi kebijakan sistem peradilan pidana.</p><span class="launch">Buka platform ↗</span></a>
+<a class="card app-link" href="https://berbagisaja45-droid.github.io/nusantara-export-hub" target="_blank" rel="noopener noreferrer"><div class="app-icon">🌏</div><span class="tag">PERDAGANGAN &amp; EKSPOR</span><h4>Nusantara Export Hub</h4><p>Dashboard informasi produk, pengembangan, dan pengelolaan ekspor Nusantara.</p><span class="launch">Buka platform ↗</span></a>
 </section></section>
 <style>
 /* Game & Simulasi showcase — isolated section only */
