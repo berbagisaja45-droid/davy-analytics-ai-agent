@@ -141,6 +141,14 @@ main {
   padding:12px;
 }
 
+/* Tampilkan hanya cuplikan yang dipilih dari katalog, pada desktop dan mobile */
+.item{display:none}
+.item:target{display:block}
+body:has(.item:target) .hero,
+body:has(.item:target) .notice,
+body:has(.item:target) .foot{display:none}
+.item:target{margin-top:8px}
+
 @media(max-width:600px) {
   main { padding:12px; }
 
@@ -149,13 +157,6 @@ main {
   }
 
  
-/* Tampilkan hanya cuplikan yang dipilih dari katalog */
-.item{display:none}
-.item:target{display:block}
-body:has(.item:target) .hero,
-body:has(.item:target) .notice,
-body:has(.item:target) .foot{display:none}
-.item:target{margin-top:8px}
  .item h2 {
     font-size:18px;
   }
