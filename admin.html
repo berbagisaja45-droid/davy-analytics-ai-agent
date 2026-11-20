@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17344f">
+<title>Admin Pesanan | Davy Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17324a;background:#eef3f8}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:1100px;margin:auto;padding:18px}
+header{background:#17344f;color:#fff;padding:18px 20px;border-bottom:4px solid #2c7197}
+header h1{font-size:20px;margin:0}header p{margin:5px 0 0;color:#d5e4ef;font-size:13px}
+.panel{background:#fff;border:1px solid #d7e1ed;border-radius:16px;padding:18px;margin:16px 0;box-shadow:0 3px 12px #19324a0b}
+h2{font-size:18px;margin:0 0 12px}.muted{color:#647b91;font-size:13px;line-height:1.5}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
+input,select{width:100%;padding:12px;border:1px solid #cbd8e5;border-radius:10px;background:#fff;color:#17324a;font:inherit}
+button{border:0;border-radius:10px;padding:11px 15px;background:#246987;color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.secondary{background:#e8eff5;color:#244b68;border:1px solid #cbd8e5}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.metric{background:#f4f7fa;border:1px solid #dce5ed;border-radius:12px;padding:14px}.metric span{display:block;color:#647b91;font-size:12px}.metric strong{display:block;font-size:24px;margin-top:5px}
+#app{display:none}.status{display:inline-block;padding:5px 8px;border-radius:20px;background:#e8f2f6;color:#245b78;font-size:12px}
+.notice{padding:11px;border-radius:10px;background:#f2f6fa;color:#36566f;font-size:13px;margin-top:12px;white-space:pre-wrap}
+.error{background:#fff0f0;color:#9b3030}.tablebox{overflow:auto}table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e1e8ef;vertical-align:top}th{color:#5c7185;background:#f7f9fb}
+.actions{display:flex;gap:6px;align-items:center;min-width:190px}.actions select{min-width:130px;padding:8px}
+small{color:#647b91}
+@media(max-width:600px){.wrap{padding:12px}.cards{grid-template-columns:1fr 1fr}.panel{padding:14px}header h1{font-size:18px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Davy Analytics — Admin Pesanan</h1><p>Manajemen pesanan terhubung ke Supabase</p></div></header>
+<main class="wrap">
+<section id="login" class="panel">
+<h2>Login Admin</h2><p class="muted">Masuk menggunakan akun admin yang sudah terdaftar di Supabase Authentication.</p>
+<form id="loginForm">
+<label for="email">Email admin</label><input id="email" type="email" autocomplete="username" required value="davyhendri74@gmail.com">
+<label for="password">Password Supabase</label><input id="password" type="password" autocomplete="current-password" required>
+<div style="margin-top:14px"><button id="loginBtn" type="submit">Masuk ke Dashboard</button></div>
+</form><div id="loginMsg" class="notice" role="status">Gunakan password akun Supabase Authentication, bukan API key.</div>
+</section>
+<section id="app">
+<div class="row" style="justify-content:space-between"><div><h2>Ringkasan Pesanan</h2><small id="signedIn"></small></div><div style="flex:0 0 auto"><button id="refreshBtn" class="secondary">Muat ulang</button> <button id="logoutBtn" class="secondary">Keluar</button></div></div>
+<div class="cards">
+<div class="metric"><span>Total pesanan</span><strong id="total">0</strong></div>
+<div class="metric"><span>Pesanan baru</span><strong id="newCount">0</strong></div>
+<div class="metric"><span>Pesanan dibayar</span><strong id="paidCount">0</strong></div>
+</div>
+<section class="panel">
+<div class="row"><div><h2>Daftar Pesanan</h2><p class="muted">Data dibaca langsung dari tabel public.orders.</p></div><div><button id="csvBtn" class="secondary">Ekspor CSV</button></div></div>
+<label for="search">Cari pesanan</label><input id="search" placeholder="Nomor pesanan, nama, email, atau produk">
+<div id="dataMsg" class="notice">Memuat data pesanan...</div>
+<div class="tablebox"><table><thead><tr><th>Nomor / Tanggal</th><th>Pelanggan</th><th>Produk</th><th>Nilai</th><th>Status</th><th>Ubah status</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+</section>
+</section>
+</main>
+<script>
+const SUPABASE_URL='https://mfdbaavnikrdqalqqwgj.supabase.co';
+const SUPABASE_KEY='sb_publishable_trIKLS3hkLrqMDaL25U0A_SuWkO9Yc';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let orders=[];
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=(v,c='IDR')=>{const n=Number(v);if(!Number.isFinite(n))return esc(v);try{return new Intl.NumberFormat('id-ID',{style:'currency',currency:c,maximumFractionDigits:2}).format(n)}catch{return String(v)}};
+function message(id,text,error=false){$(id).textContent=text;$(id).classList.toggle('error',error)}
+async function loadOrders(){
+ message('dataMsg','Mengambil data dari Supabase...');
+ const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false});
+ if(error){message('dataMsg','Tidak dapat membaca pesanan: '+error.message+'\nPastikan login admin dan policy RLS sudah benar.',true);return}
+ orders=data||[];
+ $('total').textContent=orders.length;
+ $('newCount').textContent=orders.filter(o=>String(o.status||'').toLowerCase().includes('baru')).length;
+ $('paidCount').textContent=orders.filter(o=>String(o.status||'').toLowerCase()==='dibayar').length;
+ message('dataMsg',orders.length+' pesanan berhasil dimuat.');
+ render();
+}
+function render(){
+ const q=$('search').value.trim().toLowerCase();
+ const rows=orders.filter(o=>[o.order_number,o.customer_name,o.customer_email,o.product,o.status].some(v=>String(v??'').toLowerCase().includes(q)));
+ $('ordersBody').innerHTML=rows.map(o=>{
+ const id=esc(o.id),no=esc(o.order_number||o.id),date=o.created_at?new Date(o.created_at).toLocaleString('id-ID'):'-';
+ const status=String(o.status||'Pesanan Baru');
+ const opts=['Pesanan Baru','Menunggu Verifikasi','Belum Dibayar','Dibayar','Diproses','Selesai','Dibatalkan','Dikembalikan'];
+ const options=[...new Set([...opts,status])].map(s=>'<option value="'+esc(s)+'" '+(s===status?'selected':'')+'>'+esc(s)+'</option>').join('');
+ return '<tr><td><strong>'+no+'</strong><br><small>'+esc(date)+'</small></td><td>'+esc(o.customer_name)+'<br><small>'+esc(o.customer_email)+'</small></td><td>'+esc(o.product)+'<br><small>'+esc(o.description||'')+'</small></td><td>'+money(o.budget,o.currency||'IDR')+'</td><td><span class="status">'+esc(status)+'</span></td><td><div class="actions"><select id="status-'+id+'">'+options+'</select><button data-update="'+id+'">Simpan</button></div></td></tr>';
+ }).join('')||'<tr><td colspan="6">Tidak ada pesanan yang cocok.</td></tr>';
+ document.querySelectorAll('[data-update]').forEach(btn=>btn.addEventListener('click',()=>updateStatus(btn.dataset.update,btn)));
+}
+async function updateStatus(id,btn){
+ const value=$('status-'+id).value;
+ if(!confirm('Ubah status pesanan menjadi "'+value+'"?'))return;
+ btn.disabled=true;btn.textContent='...';
+ const {error}=await db.from('orders').update({status:value}).eq('id',id);
+ btn.disabled=false;btn.textContent='Simpan';
+ if(error){message('dataMsg','Gagal memperbarui status: '+error.message,true);return}
+ message('dataMsg','Status pesanan berhasil diperbarui.');await loadOrders();
+}
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();const b=$('loginBtn');b.disabled=true;b.textContent='Memeriksa...';message('loginMsg','Sedang login...');
+ const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+ b.disabled=false;b.textContent='Masuk ke Dashboard';
+ if(error){message('loginMsg','Login gagal: '+error.message,true);return}
+ $('login').style.display='none';$('app').style.display='block';$('signedIn').textContent='Login sebagai '+(data.user.email||'admin');
+ await loadOrders();
+});
+$('logoutBtn').onclick=async()=>{await db.auth.signOut();orders=[];$('app').style.display='none';$('login').style.display='block';$('password').value='';message('loginMsg','Anda sudah keluar dari dashboard.')};
+$('refreshBtn').onclick=loadOrders;$('search').addEventListener('input',render);
+$('csvBtn').onclick=()=>{
+ if(!orders.length){message('dataMsg','Belum ada data untuk diekspor.');return}
+ const cols=['order_number','created_at','customer_name','customer_email','customer_phone','product','budget','currency','status','description'];
+ const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const csv='\ufeff'+[cols.join(','),...orders.map(o=>cols.map(k=>q(o[k])).join(','))].join('\r\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='davy-analytics-pesanan.csv';a.click();URL.revokeObjectURL(url);
+};
+(async()=>{const {data}=await db.auth.getSession();if(data.session){$('login').style.display='none';$('app').style.display='block';$('signedIn').textContent='Login sebagai '+(data.session.user.email||'admin');await loadOrders()}})();
+</script>
+</body>
+</html>
