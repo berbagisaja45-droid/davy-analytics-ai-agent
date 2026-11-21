@@ -752,4 +752,72 @@ function resetMudharabah(){document.getElementById('mudRole').value='bank';docum
 function runCrimeSimulation(){const scenario=document.getElementById('crimeScenario').value,budget=Number(document.getElementById('crimeBudget').value),vals=['crimePolice','crimeProsecutor','crimeJudge','crimeCorrections'].map(id=>Number(document.getElementById(id).value));const sum=vals.reduce((a,b)=>a+b,0),base={low:35,medium:58,high:78}[scenario];if(sum>budget){document.getElementById('crimeResult').innerHTML='<b>Anggaran melebihi batas.</b> Total alokasi '+sum+' dari anggaran '+budget+'. Kurangi alokasi.';return}const weights=[.28,.22,.20,.30],score=vals.reduce((s,v,i)=>s+v*weights[i],0);const index=Math.max(0,Math.min(100,base-score*.35));const probability=Math.max(1,Math.min(95,index*.72));document.getElementById('crimeResult').innerHTML='<b>Hasil simulasi (ilustratif)</b><br>Anggaran terpakai: '+sum+' / '+budget+' poin<br>Indeks tekanan kriminalitas: <b>'+index.toFixed(1)+'</b><br>Probabilitas indikator kriminalitas: <b>'+probability.toFixed(1)+'%</b><br>Intervensi paling besar: '+['Polisi','Jaksa','Hakim','Pemasyarakatan'][vals.indexOf(Math.max(...vals))]+'<br><small>Model prototipe untuk eksplorasi trade-off, bukan estimasi atau prediksi kriminalitas nyata.</small>'}
 function resetCrimeSimulation(){document.getElementById('crimeScenario').value='medium';document.getElementById('crimeBudget').value=82;['crimePolice','crimeProsecutor','crimeJudge','crimeCorrections'].forEach((id,i)=>document.getElementById(id).value=[25,20,20,17][i]);document.getElementById('crimeResult').textContent='Alokasikan anggaran ke empat aktor, lalu jalankan simulasi.'}
 
-</script></body></html>
+</script>
+<style>
+#passwordRecoveryPanel{display:none;position:fixed;inset:0;z-index:99999;background:rgba(5,10,25,.82);padding:18px;align-items:center;justify-content:center}
+#passwordRecoveryPanel .recovery-card{width:min(460px,100%);background:#fff;color:#17243b;border-radius:18px;padding:24px;box-shadow:0 18px 70px #0007;font-family:system-ui,Arial,sans-serif}
+#passwordRecoveryPanel h2{margin:0 0 8px;font-size:22px}#passwordRecoveryPanel p{color:#526176;font-size:14px;line-height:1.5}
+#passwordRecoveryPanel label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
+#passwordRecoveryPanel input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}
+#passwordRecoveryPanel button{margin-top:16px;width:100%;padding:12px;border:0;border-radius:9px;background:#176b83;color:#fff;font-weight:700;font-size:15px}
+#passwordRecoveryPanel button:disabled{opacity:.6}#passwordRecoveryMessage{margin-top:12px;font-size:13px;white-space:pre-wrap}
+</style>
+<div id="passwordRecoveryPanel" role="dialog" aria-modal="true" aria-labelledby="recoveryTitle">
+ <div class="recovery-card">
+  <h2 id="recoveryTitle">Buat Password Baru</h2>
+  <p>Masukkan password baru untuk akun Davy Analytics AI Agent.</p>
+  <form id="passwordRecoveryForm">
+   <label for="newAdminPassword">Password baru</label>
+   <input id="newAdminPassword" type="password" minlength="10" autocomplete="new-password" required placeholder="Minimal 10 karakter">
+   <label for="confirmAdminPassword">Ulangi password baru</label>
+   <input id="confirmAdminPassword" type="password" minlength="10" autocomplete="new-password" required placeholder="Ketik ulang password">
+   <button id="saveAdminPassword" type="submit">Simpan Password Baru</button>
+  </form>
+  <div id="passwordRecoveryMessage" aria-live="polite"></div>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+ const panel=document.getElementById('passwordRecoveryPanel');
+ const form=document.getElementById('passwordRecoveryForm');
+ if(!panel||!form||!window.supabase)return;
+ const client=window.supabase.createClient('https://mfdbaavnikrdqalqqwgj.supabase.co','sb_publishable_trIKLS3hkLrqMDaL25U0A_SuWkO9Yc',{
+  auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
+ });
+ const msg=document.getElementById('passwordRecoveryMessage');
+ const button=document.getElementById('saveAdminPassword');
+ const hash=new URLSearchParams(location.hash.slice(1));
+ const isRecovery=hash.get('type')==='recovery';
+ async function reveal(){
+  const result=await client.auth.getSession();
+  if(result.data.session){
+   panel.style.display='flex';
+   document.getElementById('newAdminPassword').focus();
+  }else{
+   panel.style.display='flex';
+   msg.textContent='Sesi pemulihan belum terbaca. Buka kembali email reset password terbaru dan klik tautannya sekali lagi.';
+   form.style.display='none';
+  }
+ }
+ if(isRecovery){reveal();}
+ client.auth.onAuthStateChange((event,session)=>{
+  if(event==='PASSWORD_RECOVERY'||(isRecovery&&session)){panel.style.display='flex';form.style.display='block';}
+ });
+ form.addEventListener('submit',async function(e){
+  e.preventDefault();
+  const p=document.getElementById('newAdminPassword').value;
+  const c=document.getElementById('confirmAdminPassword').value;
+  if(p.length<10){msg.textContent='Password minimal 10 karakter.';return;}
+  if(p!==c){msg.textContent='Konfirmasi password tidak sama.';return;}
+  button.disabled=true;button.textContent='Menyimpan...';msg.textContent='Sedang memperbarui password akun...';
+  const {data,error}=await client.auth.updateUser({password:p});
+  button.disabled=false;button.textContent='Simpan Password Baru';
+  if(error){msg.textContent='Password belum berhasil diperbarui: '+error.message;return;}
+  msg.textContent='Password berhasil diperbarui. Silakan login ke Dashboard Admin menggunakan password baru.';
+  form.reset();
+  setTimeout(()=>{panel.style.display='none';location.hash='#home';},3500);
+ });
+})();
+</script>
+</body></html>
