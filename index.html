@@ -466,6 +466,11 @@
    <div class="admin-table-wrap"><table class="admin-orders-table"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Pelanggan</th><th>Produk</th><th>Nilai</th><th>Status</th><th>Simpan</th></tr></thead><tbody id="adminOrdersBody"><tr><td colspan="7">Belum memuat data.</td></tr></tbody></table></div>
   </section>
   <p id="adminDataMessage" class="subtle" role="status" aria-live="polite"></p>
+  <section class="card" id="adminStatusHistory" style="margin-top:16px">
+   <h3 style="margin:0 0 8px">Riwayat Perubahan Status</h3>
+   <p class="subtle">Catatan perubahan status pesanan yang tersimpan di Supabase.</p>
+   <div class="admin-table-wrap"><table class="admin-orders-table"><thead><tr><th>Waktu</th><th>Nomor Pesanan</th><th>Status Sebelumnya</th><th>Status Baru</th><th>Diubah Oleh</th></tr></thead><tbody id="adminStatusHistoryBody"><tr><td colspan="5">Belum memuat riwayat.</td></tr></tbody></table></div>
+  </section>
  </section>
 </section>
 </main>
@@ -964,7 +969,13 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
   $('adminDataMessage').textContent='Mengambil pesanan dari Supabase...';
   const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false});
   if(error){$('adminDataMessage').textContent='Gagal membaca pesanan: '+error.message+' Pastikan akun ini terdaftar sebagai admin di admin_users dan policy RLS aktif.';return;}
-  allOrders=data||[];render();$('adminDataMessage').textContent='Data berhasil dimuat dari database Supabase.';
+  allOrders=data||[];render();await refreshStatusHistory();$('adminDataMessage').textContent='Data pesanan dan riwayat berhasil dimuat dari Supabase.';
+ }
+ async function refreshStatusHistory(){
+  const body=$('adminStatusHistoryBody');
+  const {data,error}=await client.from('order_status_history').select('order_number,old_status,new_status,changed_at,changed_by_email').order('changed_at',{ascending:false}).limit(50);
+  if(error){body.innerHTML='<tr><td colspan="5">Riwayat belum tersedia. Jalankan SQL pembuatan tabel dan trigger riwayat di Supabase terlebih dahulu.</td></tr>';return;}
+  body.innerHTML=data&&data.length?data.map(h=>'<tr><td>'+safe(new Date(h.changed_at).toLocaleString('id-ID'))+'</td><td><b>'+safe(h.order_number)+'</b></td><td>'+safe(h.old_status||'—')+'</td><td>'+safe(h.new_status||'—')+'</td><td>'+safe(h.changed_by_email||'Admin')+'</td></tr>').join(''):'<tr><td colspan="5">Belum ada perubahan status yang tercatat.</td></tr>';
  }
  login.addEventListener('submit',async e=>{
   e.preventDefault();$('adminLoginButton').disabled=true;$('adminLoginMessage').textContent='Memeriksa akun administrator...';
