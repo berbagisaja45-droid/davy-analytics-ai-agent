@@ -461,7 +461,7 @@
   <div class="landing-stats admin-metrics">
    <div><strong id="metricTotal">—</strong><span>Total Pesanan</span></div><div><strong id="metricNew">—</strong><span>Pesanan Baru</span></div><div><strong id="metricValue">—</strong><span>Total Nilai Pesanan</span></div><div><strong id="metricDone">—</strong><span>Pesanan Selesai</span></div>
   </div>
-  <section class="card"><div class="inline-fields"><div class="field" style="flex:2"><label for="adminSearch">Cari nomor pesanan / pelanggan / produk</label><input id="adminSearch" type="search" placeholder="Ketik kata kunci..."></div><div class="field"><label for="adminStatusFilter">Filter status</label><select id="adminStatusFilter"><option value="">Semua status</option><option>Pesanan Baru</option><option>Diproses</option><option>Menunggu Pembayaran</option><option>Dibayar</option><option>Selesai</option><option>Dibatalkan</option><option>Dikembalikan</option></select></div></div>
+  <section class="card"><div class="inline-fields"><div class="field" style="flex:2"><label for="adminSearch">Cari nomor pesanan / pelanggan / produk</label><input id="adminSearch" type="search" placeholder="Ketik kata kunci..."></div><div class="field"><label for="adminStatusFilter">Filter status</label><select id="adminStatusFilter"><option value="">Semua status</option><option>Dibatalkan</option><option>Menunggu Pembayaran</option><option>Negosiasi</option><option>Pesanan Baru</option><option>Proposal Dikirim</option><option>Selesai</option><option>Sudah Dihubungi</option></select></div></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn secondary" id="adminExportCsv" type="button">Ekspor CSV</button><span class="subtle" id="adminOrderCount" aria-live="polite"></span></div>
    <div class="admin-table-wrap"><table class="admin-orders-table"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Pelanggan</th><th>Produk</th><th>Nilai</th><th>Status</th><th>Simpan</th></tr></thead><tbody id="adminOrdersBody"><tr><td colspan="7">Belum memuat data.</td></tr></tbody></table></div>
   </section>
@@ -938,7 +938,7 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
  const login=$('adminLoginForm'), loginCard=$('adminLoginCard'), panel=$('adminOrdersPanel');
  if(!login||!panel)return;
  let client=null,allOrders=[];
- const statuses=['Pesanan Baru','Diproses','Menunggu Pembayaran','Dibayar','Selesai','Dibatalkan','Dikembalikan'];
+ const statuses=['Dibatalkan','Menunggu Pembayaran','Negosiasi','Pesanan Baru','Proposal Dikirim','Selesai','Sudah Dihubungi'];
  const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const amount=o=>Number(o.budget)||0;
  const money=(n,c)=>{try{return new Intl.NumberFormat('id-ID',{style:'currency',currency:c||'IDR',maximumFractionDigits:0}).format(n)}catch(_){return (c||'IDR')+' '+n}};
