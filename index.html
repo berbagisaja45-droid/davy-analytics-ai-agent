@@ -473,6 +473,12 @@
   </section>
  </section>
 </section>
+<div id="adminOrderDetailModal" role="dialog" aria-modal="true" aria-labelledby="adminOrderDetailTitle" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);padding:18px;overflow:auto">
+ <section class="card" style="max-width:720px;margin:4vh auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h3 id="adminOrderDetailTitle" style="margin:0">Detail Pesanan</h3><button class="btn secondary" id="adminOrderDetailClose" type="button">Tutup</button></div>
+  <div id="adminOrderDetailContent" style="margin-top:16px"></div>
+ </section>
+</div>
 </main>
 <script>
 const el=id=>document.getElementById(id);
@@ -962,7 +968,7 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
   $('adminOrderCount').textContent=rows.length+' dari '+allOrders.length+' pesanan';
   $('adminOrdersBody').innerHTML=rows.length?rows.map(o=>{
    const id=safe(o.id),number=safe(o.order_number||o.id),date=o.created_at?new Date(o.created_at).toLocaleDateString('id-ID'):'—';
-   return '<tr><td><b>'+number+'</b><br><small>'+safe(o.customer_email)+'</small></td><td>'+date+'</td><td>'+safe(o.customer_name)+'</td><td>'+safe(o.product)+'</td><td>'+money(amount(o),o.currency)+'</td><td><select data-status-for="'+id+'">'+statusOptions(o.status)+'</select></td><td><button class="btn primary" type="button" data-save-status="'+id+'">Simpan</button></td></tr>';
+   return '<tr><td><b>'+number+'</b><br><small>'+safe(o.customer_email)+'</small></td><td>'+date+'</td><td>'+safe(o.customer_name)+'</td><td>'+safe(o.product)+'</td><td>'+money(amount(o),o.currency)+'</td><td><select data-status-for="'+id+'">'+statusOptions(o.status)+'</select></td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn secondary" type="button" data-view-order="'+id+'">Detail</button><button class="btn primary" type="button" data-save-status="'+id+'">Simpan</button></div></td></tr>';
   }).join(''):'<tr><td colspan="7">Tidak ada pesanan yang cocok.</td></tr>';
  }
  async function refresh(){
@@ -989,7 +995,17 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
  $('adminRefresh').addEventListener('click',refresh);
  $('adminLogout').addEventListener('click',async()=>{await client.auth.signOut();allOrders=[];panel.style.display='none';loginCard.style.display='block';$('adminLoginMessage').textContent='Anda sudah keluar dari dashboard.';});
  $('adminSearch').addEventListener('input',render);$('adminStatusFilter').addEventListener('change',render);
- $('adminOrdersBody').addEventListener('click',async e=>{
+ $('adminOrdersBody').addEventListener('click',e=>{
+  const detailBtn=e.target.closest('[data-view-order]');if(!detailBtn)return;
+  const order=allOrders.find(o=>String(o.id)===detailBtn.getAttribute('data-view-order'));if(!order)return;
+  const date=order.created_at?new Date(order.created_at).toLocaleString('id-ID'):'—';
+  const fields=[['Nomor Pesanan',order.order_number||order.id],['ID Database',order.id],['Tanggal Pesanan',date],['Nama Pelanggan',order.customer_name],['Email',order.customer_email],['Telepon',order.customer_phone],['Produk / Layanan',order.product],['Nilai Pesanan',money(amount(order),order.currency)],['Mata Uang',order.currency||'IDR'],['Status',order.status],['Deskripsi / Catatan',order.description]];
+  $('adminOrderDetailContent').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">'+fields.map(([label,value])=>'<div style="padding:12px;border:1px solid #dce5ed;border-radius:10px;min-width:0"><div class="subtle" style="font-size:12px;margin-bottom:5px">'+safe(label)+'</div><div style="font-weight:600;overflow-wrap:anywhere;white-space:pre-wrap">'+safe(value||'—')+'</div></div>').join('')+'</div>';
+  $('adminOrderDetailModal').style.display='block';
+});
+$('adminOrderDetailClose').addEventListener('click',()=>$('adminOrderDetailModal').style.display='none');
+$('adminOrderDetailModal').addEventListener('click',e=>{if(e.target.id==='adminOrderDetailModal')e.currentTarget.style.display='none';});
+$('adminOrdersBody').addEventListener('click',async e=>{
   const btn=e.target.closest('[data-save-status]');if(!btn)return;
   const id=btn.getAttribute('data-save-status'),select=$('adminOrdersBody').querySelector('[data-status-for="'+CSS.escape(id)+'"]');
   const next=select.value,old=allOrders.find(o=>String(o.id)===id);if(!old||next===old.status)return;
