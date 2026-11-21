@@ -974,7 +974,7 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
  async function refreshStatusHistory(){
   const body=$('adminStatusHistoryBody');
   const {data,error}=await client.from('order_status_history').select('order_number,old_status,new_status,changed_at,changed_by_email').order('changed_at',{ascending:false}).limit(50);
-  if(error){body.innerHTML='<tr><td colspan="5">Riwayat belum tersedia. Jalankan SQL pembuatan tabel dan trigger riwayat di Supabase terlebih dahulu.</td></tr>';return;}
+  if(error){body.innerHTML='<tr><td colspan="5">Gagal membaca riwayat: '+safe(error.message||'Kesalahan tidak diketahui')+'</td></tr>';return;}
   body.innerHTML=data&&data.length?data.map(h=>'<tr><td>'+safe(new Date(h.changed_at).toLocaleString('id-ID'))+'</td><td><b>'+safe(h.order_number)+'</b></td><td>'+safe(h.old_status||'—')+'</td><td>'+safe(h.new_status||'—')+'</td><td>'+safe(h.changed_by_email||'Admin')+'</td></tr>').join(''):'<tr><td colspan="5">Belum ada perubahan status yang tercatat.</td></tr>';
  }
  login.addEventListener('submit',async e=>{
