@@ -995,13 +995,17 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
  $('adminRefresh').addEventListener('click',refresh);
  $('adminLogout').addEventListener('click',async()=>{await client.auth.signOut();allOrders=[];panel.style.display='none';loginCard.style.display='block';$('adminLoginMessage').textContent='Anda sudah keluar dari dashboard.';});
  $('adminSearch').addEventListener('input',render);$('adminStatusFilter').addEventListener('change',render);
- $('adminOrdersBody').addEventListener('click',e=>{
+ $('adminOrdersBody').addEventListener('click',async e=>{
   const detailBtn=e.target.closest('[data-view-order]');if(!detailBtn)return;
   const order=allOrders.find(o=>String(o.id)===detailBtn.getAttribute('data-view-order'));if(!order)return;
   const date=order.created_at?new Date(order.created_at).toLocaleString('id-ID'):'—';
   const fields=[['Nomor Pesanan',order.order_number||order.id],['ID Database',order.id],['Tanggal Pesanan',date],['Nama Pelanggan',order.customer_name],['Email',order.customer_email],['Telepon',order.customer_phone],['Produk / Layanan',order.product],['Nilai Pesanan',money(amount(order),order.currency)],['Mata Uang',order.currency||'IDR'],['Status',order.status],['Deskripsi / Catatan',order.description]];
-  $('adminOrderDetailContent').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">'+fields.map(([label,value])=>'<div style="padding:12px;border:1px solid #dce5ed;border-radius:10px;min-width:0"><div class="subtle" style="font-size:12px;margin-bottom:5px">'+safe(label)+'</div><div style="font-weight:600;overflow-wrap:anywhere;white-space:pre-wrap">'+safe(value||'—')+'</div></div>').join('')+'</div>';
+  $('adminOrderDetailContent').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">'+fields.map(([label,value])=>'<div style="padding:12px;border:1px solid #dce5ed;border-radius:10px;min-width:0"><div class="subtle" style="font-size:12px;margin-bottom:5px">'+safe(label)+'</div><div style="font-weight:600;overflow-wrap:anywhere;white-space:pre-wrap">'+safe(value||'—')+'</div></div>').join('')+'</div><section style="margin-top:20px"><h4 style="margin:0 0 10px">Riwayat Perubahan Status</h4><div id="adminOrderDetailHistory" class="subtle">Memuat riwayat pesanan...</div></section>';
   $('adminOrderDetailModal').style.display='block';
+  const historyBox=$('adminOrderDetailHistory');
+  const {data,error}=await client.from('order_status_history').select('order_number,old_status,new_status,changed_at,changed_by_email').eq('order_id',String(order.id)).order('changed_at',{ascending:false}).limit(50);
+  if(error){historyBox.textContent='Riwayat tidak dapat dibaca: '+error.message;return;}
+  historyBox.innerHTML=data&&data.length?'<div style="display:grid;gap:10px">'+data.map(h=>'<div style="border:1px solid #dce5ed;border-radius:10px;padding:12px"><div style="font-size:12px;color:#64748b">'+safe(new Date(h.changed_at).toLocaleString('id-ID'))+'</div><div style="margin-top:5px"><b>'+safe(h.old_status||'—')+'</b> → <b>'+safe(h.new_status||'—')+'</b></div><div style="font-size:12px;color:#64748b;margin-top:4px">Diubah oleh: '+safe(h.changed_by_email||'Admin')+'</div></div>').join('')+'</div>':'Belum ada riwayat perubahan untuk pesanan ini.';
 });
 $('adminOrderDetailClose').addEventListener('click',()=>$('adminOrderDetailModal').style.display='none');
 $('adminOrderDetailModal').addEventListener('click',e=>{if(e.target.id==='adminOrderDetailModal')e.currentTarget.style.display='none';});
