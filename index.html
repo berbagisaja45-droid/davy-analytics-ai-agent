@@ -824,4 +824,79 @@ function resetCrimeSimulation(){document.getElementById('crimeScenario').value='
  });
 })();
 </script>
+
+<style id="creator-profile-interaction-style">
+/* Final Creator Profile layout: full-bleed map with readable, movable profile panel */
+#creatorProfile{position:relative!important;isolation:isolate!important;min-height:560px!important;height:min(72vh,760px)!important;max-height:none!important;width:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;padding:28px!important;overflow:hidden!important;border-radius:22px!important;background:#dce8e0!important}
+#creatorProfile .creator-map-bg{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:0!important;display:block!important;opacity:1!important;overflow:hidden!important}
+#creatorProfile .creator-map-bg iframe{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;border:0!important;display:block!important;filter:none!important}
+#creatorProfile .creator-map-shade{position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(90deg,rgba(9,30,48,.16),rgba(9,30,48,.04) 70%)!important;pointer-events:none!important}
+#creatorProfile .creator-avatar{position:relative!important;z-index:3!important;flex:0 0 132px!important;width:132px!important;height:132px!important}
+#creatorProfile .creator-info{position:relative!important;z-index:4!important;flex:0 1 760px!important;width:min(760px,calc(100% - 160px))!important;max-width:760px!important;min-width:260px!important;max-height:calc(100% - 36px)!important;overflow:auto!important;padding:28px!important;border-radius:18px!important;background:rgba(12,31,50,.88)!important;border:1px solid rgba(255,255,255,.35)!important;box-shadow:0 14px 38px rgba(0,0,0,.22)!important;backdrop-filter:blur(8px)!important;color:#fff!important;touch-action:pan-y}
+#creatorProfile .creator-info h3,#creatorProfile .creator-info p{color:#fff!important}
+#creatorProfile .creator-panel-drag-handle{display:flex;align-items:center;gap:8px;width:max-content;max-width:100%;margin:0 0 12px;padding:7px 11px;border:1px solid rgba(255,255,255,.45);border-radius:20px;background:rgba(255,255,255,.14);color:#fff;font-size:11px;font-weight:700;cursor:grab;user-select:none;touch-action:none}
+#creatorProfile .creator-panel-drag-handle:active{cursor:grabbing}
+#creatorProfile .creator-panel-drag-handle:before{content:'⠿';font-size:18px;line-height:10px}
+#creatorProfile .creator-info.is-dragging{transition:none!important;user-select:none;box-shadow:0 22px 48px rgba(0,0,0,.32)!important}
+@media(max-width:700px){
+ #creatorProfile{height:auto!important;min-height:720px!important;padding:18px!important;flex-direction:column!important;justify-content:center!important;gap:14px!important}
+ #creatorProfile .creator-avatar{width:104px!important;height:104px!important;flex-basis:104px!important}
+ #creatorProfile .creator-info{width:min(100%,560px)!important;min-width:0!important;max-height:480px!important;padding:18px!important;flex:0 1 auto!important}
+}
+</style>
+<script id="creator-profile-drag-script">
+(function(){
+ function setupCreatorDrag(){
+  const section=document.getElementById('creatorProfile');
+  const panel=section&&section.querySelector('.creator-info');
+  if(!section||!panel||panel.dataset.dragReady)return;
+  panel.dataset.dragReady='1';
+  const handle=document.createElement('div');
+  handle.className='creator-panel-drag-handle';
+  handle.id='creator-panel-drag-handle';
+  handle.textContent='Geser profil ini';
+  handle.title='Tarik panel ini ke posisi yang Anda inginkan';
+  handle.setAttribute('role','button');
+  handle.setAttribute('tabindex','0');
+  handle.setAttribute('aria-label','Geser panel profil. Gunakan tombol panah untuk memindahkan.');
+  panel.insertBefore(handle,panel.firstChild);
+  let active=null,baseX=0,baseY=0,startX=0,startY=0,dx=0,dy=0;
+  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+  handle.addEventListener('pointerdown',function(e){
+   if(e.button!==undefined&&e.button!==0)return;
+   const r=panel.getBoundingClientRect(),p=section.getBoundingClientRect();
+   active=e.pointerId;startX=e.clientX;startY=e.clientY;
+   baseX=dx;baseY=dy;
+   panel.classList.add('is-dragging');
+   try{handle.setPointerCapture(e.pointerId)}catch(_){}
+   e.preventDefault();
+  });
+  handle.addEventListener('pointermove',function(e){
+   if(active!==e.pointerId)return;
+   const p=section.getBoundingClientRect(),r=panel.getBoundingClientRect();
+   const maxX=Math.max(0,(p.width-r.width)/2+Math.abs(dx));
+   const maxY=Math.max(0,(p.height-r.height)/2+Math.abs(dy));
+   dx=clamp(baseX+e.clientX-startX,-maxX,maxX);
+   dy=clamp(baseY+e.clientY-startY,-maxY,maxY);
+   panel.style.transform='translate3d('+dx+'px,'+dy+'px,0)';
+  });
+  function stop(e){if(active===null)return;if(e&&e.pointerId!==undefined&&e.pointerId!==active)return;active=null;panel.classList.remove('is-dragging');}
+  handle.addEventListener('pointerup',stop);
+  handle.addEventListener('pointercancel',stop);
+  handle.addEventListener('keydown',function(e){
+   const step=e.shiftKey?30:10;
+   if(e.key==='ArrowLeft')dx-=step;
+   else if(e.key==='ArrowRight')dx+=step;
+   else if(e.key==='ArrowUp')dy-=step;
+   else if(e.key==='ArrowDown')dy+=step;
+   else if(e.key==='Home'){dx=0;dy=0;}
+   else return;
+   e.preventDefault();panel.style.transform='translate3d('+dx+'px,'+dy+'px,0)';
+  });
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupCreatorDrag);
+ else setupCreatorDrag();
+})();
+</script>
+
 </body></html>
