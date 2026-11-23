@@ -154,7 +154,7 @@ function showBest(){const b=lsGet('mg_best');$('#best').textContent=b?('Skor ter
 function newGame(){P.prior=Number($('#priorInput').value)/100;P.acc=Number($('#accuracyInput').value)/100;S={r:1,score:0,correct:0,log:[],stage:0};$('#intro').hidden=true;$('#game').hidden=false;$('#stats').hidden=false;startRound()}
 
 function startRound(){
-  const type=Math.random()<.5?'Amanah':'Oportunis';
+  const type=Math.random()<P.prior?'Amanah':'Oportunis';
   const other=type==='Amanah'?'Oportunis':'Amanah';
   const used={Amanah:shuffle(CL.Amanah),Oportunis:shuffle(CL.Oportunis)};
   const clues=[];let k=0;
