@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.model-settings{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:12px}.setting-label{display:block;margin:12px 0}.setting-label input{display:block;width:100%;margin-top:8px}.bne-panel{margin:12px 0;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}</style></head><body>
 <title>Mudharabah Game</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -108,6 +108,7 @@ svg .gl{stroke:var(--line);stroke-width:1}
         <li>Skor = laba bank (Rp juta) + 5 poin untuk tiap prediksi benar.</li>
       </ul>
     </details>
+    <details class="model-settings" open><summary>Parameter Bayesian (dapat diubah pengajar)</summary><label class="setting-label">Prior nasabah Amanah: <b id="priorValue">50%</b><input id="priorInput" type="range" min="10" max="90" step="5" value="50"></label><label class="setting-label">Akurasi setiap petunjuk: <b id="accuracyValue">75%</b><input id="accuracyInput" type="range" min="55" max="95" step="5" value="75"></label><p class="small muted">Prior adalah keyakinan awal bank sebelum membaca petunjuk. Akurasi adalah peluang setiap petunjuk sesuai tipe nasabah sebenarnya.</p></details>
     <button class="btn primary" id="start">Mulai latihan mandiri</button>
     <p class="small muted" id="best"></p>
   </section>
@@ -123,11 +124,13 @@ svg .gl{stroke:var(--line);stroke-width:1}
 
 <script>
 /*MODEL*/
-const P={K:100,pi:40,loss:35,cost:8,ph:.8,pl:.4,acc:.75,rounds:5,bonus:5};
+const P={K:100,pi:40,loss:35,cost:8,ph:.8,pl:.4,prior:.5,acc:.75,rounds:5,bonus:5};
 function bankEV(n,eff){const p=eff==='high'?P.ph:P.pl;return p*n*P.pi-(1-p)*P.loss}
 function oppEffort(n){return (P.ph-P.pl)*(1-n)*P.pi>=P.cost-1e-9?'high':'low'}
 function effortFor(type,n){return type==='Amanah'?'high':oppEffort(n)}
-function posterior(k){const a=P.acc,x=Math.pow(a,k)*Math.pow(1-a,2-k),y=Math.pow(1-a,k)*Math.pow(a,2-k);return x/(x+y)}
+function posterior(k){const a=P.acc,p=P.prior,likeA=Math.pow(a,k)*Math.pow(1-a,2-k),likeO=Math.pow(1-a,k)*Math.pow(a,2-k);return (p*likeA)/(p*likeA+(1-p)*likeO)}
+function equilibrium(n,q){const opp=oppEffort(n),evA=bankEV(n,'high'),evO=bankEV(n,opp);return q*evA+(1-q)*evO}
+function solveBNE(q){let best={n:.1,ev:-Infinity};for(let pct=10;pct<=90;pct+=5){const n=pct/100,ev=equilibrium(n,q);if(ev>best.ev+1e-9)best={n,ev,oppEffort:oppEffort(n)}}return best}
 /*ENDMODEL*/
 
 const AV=[{n:'Zahra',e:'🧕',b:'toko kerudung daring'},{n:'Rafi',e:'🧑‍💼',b:'jasa percetakan'},{n:'Mira',e:'👩‍🌾',b:'budidaya hidroponik'},{n:'Rizal',e:'👨‍🍳',b:'warung makan'},{n:'Lina',e:'👩‍🔧',b:'bengkel motor listrik'}];
@@ -148,7 +151,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 
 function showBest(){const b=lsGet('mg_best');$('#best').textContent=b?('Skor terbaik di perangkat ini: '+b):''}
 
-function newGame(){S={r:1,score:0,correct:0,log:[],stage:0};$('#intro').hidden=true;$('#game').hidden=false;$('#stats').hidden=false;startRound()}
+function newGame(){P.prior=Number($('#priorInput').value)/100;P.acc=Number($('#accuracyInput').value)/100;S={r:1,score:0,correct:0,log:[],stage:0};$('#intro').hidden=true;$('#game').hidden=false;$('#stats').hidden=false;startRound()}
 
 function startRound(){
   const type=Math.random()<.5?'Amanah':'Oportunis';
@@ -186,7 +189,7 @@ function render(){
   }else{resultView(st,c)}
 }
 
-function hintHtml(c){const q=Math.round(c.q*100);return '<div class="hint"><b>Peluang Amanah menurut petunjuk: '+q+'%</b><div class="small muted">Dihitung dengan aturan Bayes dari peluang awal 50% dan ketepatan petunjuk 75%. Ini peluang bersyarat pada petunjuk, bukan kepastian.</div></div>'}
+function hintHtml(c){const q=Math.round(c.q*100);return '<div class="hint"><b>Posterior belief Amanah: '+q+'%</b><div class="small muted">Bayes update dari prior '+Math.round(P.prior*100)+'% dengan akurasi sinyal '+Math.round(P.acc*100)+'%. Peluang Oportunis: '+(100-q)+'%.</div></div>'}
 
 function resultView(st,c){
   const r=c.res,n=c.n,effTxt=r.eff==='high'?'bekerja keras':'bekerja santai';
@@ -195,7 +198,7 @@ function resultView(st,c){
   if(c.type==='Amanah')why=c.av.n+' bertipe Amanah, jadi ia bekerja keras berapa pun nisbahnya.';
   else if(r.eff==='high')why=c.av.n+' bertipe Oportunis, tetapi bagiannya ('+share+'%) masih di atas batas 50%, sehingga kerja keras tetap menguntungkan baginya.';
   else why=c.av.n+' bertipe Oportunis. Bagiannya hanya '+share+'%. Di bawah 50%, tambahan peluang berhasil tidak sebanding dengan biaya Rp'+P.cost+' juta, jadi ia memilih santai (moral hazard).';
-  const evH=bankEV(n,'high'),evL=bankEV(n,'low');
+  const evH=bankEV(n,'high'),evL=bankEV(n,'low'),bne=solveBNE(c.q),playerGap=Math.abs(n-bne.n)<.026;
   st.innerHTML='<div class="card"><div class="who"><div class="av" aria-hidden="true">'+c.av.e+'</div><div><h2>'+c.av.n+' memilih '+effTxt+'</h2>'
   +'<span class="badge '+(r.ok?'good':'bad')+'">Prediksi '+(r.ok?'benar (+5)':'meleset')+'</span> <span class="badge info">Tipe: '+c.type+'</span></div></div>'
   +'<p>'+why+'</p>'
@@ -203,7 +206,7 @@ function resultView(st,c){
   +'<div class="box"><b style="color:var(--'+(r.mud>=0?'good':'bad')+')">'+sg(r.mud)+'</b><span>Hasil nasabah</span></div></div>'
   +'<div class="scroll"><table><thead><tr><th>Harapan laba bank pada nisbah '+Math.round(n*100)+'%</th><th>Rp juta</th></tr></thead><tbody>'
   +'<tr><td>Jika nasabah kerja keras</td><td>'+sg(evH)+'</td></tr><tr><td>Jika nasabah kerja santai</td><td>'+sg(evL)+'</td></tr></tbody></table></div>'
-  +'<div class="label">Harapan laba bank menurut nisbah</div>'+chart(n,c.type)
+  +'<div class="bne-panel"><b>Analisis Bayesian Nash Equilibrium</b><p>Prior Amanah: '+Math.round(P.prior*100)+'% → posterior setelah sinyal: <b>'+Math.round(c.q*100)+'%</b>. Expected payoff bank pada nisbah pilihan: <b>'+rp(equilibrium(n,c.q))+'</b>.</p><p>Nisbah best response bank (grid 5%): <b>'+Math.round(bne.n*100)+'%</b>; expected payoff: <b>'+rp(bne.ev)+'</b>. '+(playerGap?'Pilihan Anda berada pada nisbah equilibrium dalam toleransi 2,5 poin persentase.':'Pilihan Anda berbeda dari nisbah best response model.')+'</p><p class="small muted">Respons nasabah dihitung optimal: Amanah memilih high effort; Oportunis memilih high effort hanya jika tambahan expected share menutup biaya usaha. BNE dihitung pada model satu-periode yang disederhanakan.</p></div>'\n  +'<div class="label">Harapan laba bank menurut nisbah</div>'+chart(n,c.type)
   +'<p class="small muted">Kurva Oportunis patah di nisbah 50%: di atas titik itu nasabah beralih ke kerja santai dan harapan laba bank jatuh. Petunjuk memberi peluang Amanah '+Math.round(c.q*100)+'%, sedangkan tipe aslinya adalah '+c.type+'.</p>'
   +'<button class="btn primary" data-act="next">'+(S.r>=P.rounds?'Lihat ringkasan':'Ronde berikutnya')+'</button></div>';
 }
@@ -234,7 +237,7 @@ function chart(n,type){
 function reveal(){
   const c=S.cur,eff=effortFor(c.type,c.n),p=eff==='high'?P.ph:P.pl,success=Math.random()<p;
   const bank=success?c.n*P.pi:-P.loss,ec=eff==='high'?P.cost:0,mud=(success?(1-c.n)*P.pi:0)-ec,ok=c.pred===eff;
-  c.res={eff,success,bank,mud,ok};S.score+=bank+(ok?P.bonus:0);if(ok)S.correct++;S.log.push({n:c.n,ok,bank});S.stage=3;render();
+  c.res={eff,success,bank,mud,ok};S.score+=bank+(ok?P.bonus:0);if(ok)S.correct++;S.log.push({n:c.n,ok,bank,prior:P.prior,posterior:c.q,bne:solveBNE(c.q).n,expected:equilibrium(c.n,c.q)});S.stage=3;render();
 }
 
 function endView(){
@@ -245,13 +248,14 @@ function endView(){
   const msg=over>=3?'Anda sering menetapkan nisbah di atas 50%. Itu menarik bagi bank jika nasabahnya Amanah, tetapi memancing kerja santai pada nasabah Oportunis.':avg<=35?'Nisbah rata-rata Anda rendah. Insentif nasabah aman, tetapi bank melepas bagian laba yang sebenarnya masih bisa diambil.':'Nisbah Anda dekat batas insentif. Itu pola yang masuk akal ketika tipe nasabah tidak terlihat.';
   $('#stage').innerHTML='<div class="card"><h2>Ringkasan latihan</h2>'
   +'<div class="split"><div class="box"><b>'+sc.toString().replace('.',',')+'</b><span>Skor akhir</span></div><div class="box"><b>'+acc+'%</b><span>Prediksi benar ('+S.correct+'/'+P.rounds+')</span></div></div>'
-  +'<div class="scroll"><table><thead><tr><th>Ronde</th><th>Nisbah bank</th><th>Prediksi</th><th>Laba bank</th></tr></thead><tbody>'
-  +S.log.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(x.n*100)+'%</td><td>'+(x.ok?'benar':'meleset')+'</td><td>'+sg(x.bank)+'</td></tr>').join('')+'</tbody></table></div>'
+  +'<div class="scroll"><table><thead><tr><th>Ronde</th><th>Prior</th><th>Posterior Amanah</th><th>Nisbah pemain</th><th>Nisbah BNE</th><th>Prediksi</th><th>Laba bank</th></tr></thead><tbody>'
+  +S.log.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(x.prior*100)+'%</td><td>'+Math.round(x.posterior*100)+'%</td><td>'+Math.round(x.n*100)+'%</td><td>'+Math.round(x.bne*100)+'%</td><td>'+(x.ok?'benar':'meleset')+'</td><td>'+sg(x.bank)+'</td></tr>').join('')+'</tbody></table></div>'
   +'<p>'+msg+'</p>'
   +'<div class="hint"><b>Pelajaran inti.</b> Ketika upaya nasabah tidak teramati, nisbah bukan sekadar pembagian laba. Nisbah menentukan insentif. Batas 50% di model ini adalah titik di mana nasabah oportunis masih mau bekerja keras.</div>'
   +'<div class="row"><button class="btn" type="button" data-act="export">Ekspor hasil (JSON)</button><button class="btn primary" data-act="again">Main lagi</button></div></div>';
 }
 
+$('#priorInput').addEventListener('input',e=>$('#priorValue').textContent=e.target.value+'%');$('#accuracyInput').addEventListener('input',e=>$('#accuracyValue').textContent=e.target.value+'%');
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
   if(a==='to1'){S.stage=1;render()}
