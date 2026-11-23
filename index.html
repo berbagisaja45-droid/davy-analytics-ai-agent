@@ -821,7 +821,7 @@ function playMudharabah(){
  if(!mudCurrent){box.innerHTML='<b>Ambil petunjuk Bayesian terlebih dahulu.</b> Setelah melihat sinyal, tetapkan nisbah dan prediksi perilaku.';return}
  if(mudCurrent.prior!==prior||mudCurrent.accuracy!==accuracy){mudCurrent=null;document.getElementById('mudSignalDisplay').textContent='Parameter berubah — ambil petunjuk lagi';box.innerHTML='<b>Prior atau akurasi berubah.</b> Ambil petunjuk baru agar posterior dihitung dari parameter yang sama.';return}
  const q=mudPosterior(prior,accuracy,mudCurrent.signals),bne=mudSolveBNE(q),type=mudCurrent.type,effort=type==='trust'?'high':mudOppEffort(share),success=Math.random()<(effort==='high'?.8:.4),gross=success ? 0.40*capital : -0.35*capital;
- const bankGain=success?gross*share/100:gross,customerGain=success?gross*(100-share)/100:0,roi=bankGain/capital*100,correct=prediction===effort;
+ const bankGain=success?gross*share/100:gross,effortCost=effort==='high'?.08*capital:0,customerGain=(success?gross*(100-share)/100:0)-effortCost,roi=bankGain/capital*100,correct=prediction===effort;
  mudGameState.score+=roi+(correct?5:0);mudGameState.profit+=bankGain;
  mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals:mudCurrent.signals,posterior:q,share,bne:bne.share,effort,prediction,correct,bankGain,roi,type,success});
  const note=type==='trust'?'Nasabah Amanah memilih high effort.':'Nasabah Oportunis merespons insentif nisbah: '+(effort==='high'?'high effort.':'low effort (moral hazard).');
