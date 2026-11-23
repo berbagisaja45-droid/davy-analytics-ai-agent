@@ -1,0 +1,274 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mudharabah Game</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: satu kolom sempit seperti layar ponsel Battle of Choices. Header + stepper + satu kartu tahap. Dunia gelap navy, aksen emas. */
+:root{
+  --bg:#101b35; --panel:#16264b; --panel2:#1d3163; --line:#2c4278;
+  --fg:#eaf0ff; --muted:#9db0dd; --accent:#f2b84b; --accent-ink:#241a00;
+  --good:#5fd39a; --bad:#ff8585; --info:#7db4ff;
+  --f-head:'Space Grotesk',system-ui,sans-serif; --f-body:'Inter',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--f-body);padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-head);margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{width:42px;height:42px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 17px var(--f-head)}
+.top h1{font-size:22px;line-height:1.1}
+.top small{color:var(--muted);display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.stats{margin-left:auto;display:flex;gap:8px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill b{color:var(--accent);font-weight:600}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card.alt{background:var(--panel2)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.steps div{font-size:12px;text-align:center;padding:7px 4px;border-radius:8px;border:1px solid var(--line);color:var(--muted)}
+.steps .on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.steps .done{color:var(--fg);background:var(--panel)}
+.who{display:flex;gap:14px;align-items:center}
+.av{width:64px;height:64px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-size:34px;flex:none}
+.who h2{font-size:20px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.clues{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.clues li{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.label{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.btn{font:600 15px var(--f-body);border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);padding:12px 16px;cursor:pointer;min-height:44px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 160px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.box b{display:block;font:700 24px var(--f-head);font-variant-numeric:tabular-nums}
+.box span{font-size:12px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;text-align:left;color:var(--fg);font:inherit;display:flex;flex-direction:column;gap:4px;min-height:44px}
+.opt[aria-pressed=true]{border-color:var(--accent);background:#2a3b6e}
+.opt strong{font-family:var(--f-head);font-size:16px}
+.badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600}
+.badge.good{background:rgba(95,211,154,.15);color:var(--good)}
+.badge.bad{background:rgba(255,133,133,.15);color:var(--bad)}
+.badge.info{background:rgba(125,180,255,.15);color:var(--info)}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:500;font-size:12px}
+td:last-child,th:last-child{text-align:right}
+.scroll{overflow-x:auto}
+details{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600}
+details p,details ul{margin-top:8px;color:var(--muted);font-size:14px}
+details ul{padding-left:18px}
+svg{width:100%;height:auto;display:block}
+svg .ax{fill:var(--muted);font:17px var(--f-body)}
+svg .gl{stroke:var(--line);stroke-width:1}
+.hint{border-left:3px solid var(--info);padding:8px 12px;background:rgba(125,180,255,.08);border-radius:0 8px 8px 0}
+.foot{font-size:12px;color:var(--muted);text-align:center}
+@media (max-width:420px){.stats{margin-left:0;width:100%}.steps div{font-size:11px}}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .25s ease-out}@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style>
+
+<style id="platform-integration">.platform-back{position:sticky;top:8px;z-index:50;max-width:720px;margin:0 auto 12px}.platform-back a{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:10px;background:#eaf2fb;color:#173b5b;border:1px solid #c8d8e8;text-decoration:none;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 3px 12px rgba(10,30,55,.12)}.academic-guide{max-width:720px;margin:0 auto 16px;background:#16264b;border:1px solid #2c4278;border-radius:14px;padding:16px;color:#eaf0ff}.academic-guide h2{font:700 18px 'Space Grotesk',system-ui;margin:0 0 8px}.academic-guide p,.academic-guide li{font:13px/1.6 Inter,system-ui;color:#c8d6f4}.academic-guide ul{padding-left:20px;margin:8px 0}.academic-guide details{margin-top:10px}@media(max-width:420px){.academic-guide{padding:13px}}</style><div class="platform-back"><a href="./index.html#interactiveGames" aria-label="Kembali ke dashboard Davy Analytics">← Kembali ke Davy Analytics AI Agent</a></div>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">MG</div>
+    <div><h1>Mudharabah Game</h1><small>Mode latihan · prototipe</small></div>
+    <div class="stats" id="stats" hidden>
+      <span class="pill">Ronde <b id="sRound">1/5</b></span>
+      <span class="pill">Skor <b id="sScore">0</b></span>
+    </div>
+  </header>
+
+  <section id="intro" class="card">
+    <h2>Anda Shahibul Maal. Siapa yang akan bekerja keras?</h2>
+    <p>Bank menyalurkan modal Rp100 juta kepada nasabah (mudharib). Laba dibagi sesuai nisbah, tetapi Anda tidak bisa melihat seberapa keras nasabah bekerja. Atur nisbah, prediksi perilakunya, lalu lihat hasilnya.</p>
+    <ul class="clues">
+      <li><b>1. Cerita.</b> Baca profil nasabah dan dua petunjuk tentang reputasinya.</li>
+      <li><b>2. Akad.</b> Tentukan nisbah bagi hasil untuk bank.</li>
+      <li><b>3. Prediksi.</b> Kunci tebakan: nasabah bekerja keras atau santai.</li>
+      <li><b>4. Hasil.</b> Lihat keputusan nasabah, laba atau rugi, dan kurva insentifnya.</li>
+    </ul>
+    <details>
+      <summary>Cara membaca model</summary>
+      <ul>
+        <li>Modal Rp100 juta. Jika usaha berhasil, laba Rp40 juta dibagi sesuai nisbah. Jika gagal, rugi Rp35 juta ditanggung bank.</li>
+        <li>Kerja keras membuat peluang berhasil 80% dan memakan biaya Rp8 juta bagi nasabah. Kerja santai: peluang berhasil 40%, tanpa biaya.</li>
+        <li>Nasabah <b>Amanah</b> selalu bekerja keras. Nasabah <b>Oportunis</b> memilih yang paling menguntungkan dirinya, dan tipenya tidak terlihat.</li>
+        <li>Petunjuk bersifat probabilistik: setiap petunjuk sesuai dengan tipe aslinya dengan peluang 75%. Karena itu hasilnya adalah peluang bersyarat, bukan kepastian perilaku.</li>
+        <li>Penyederhanaan: dalam fikih, kerugian akibat kelalaian mudharib menjadi tanggungannya. Di sini kerja santai tidak dianggap kelalaian yang bisa dibuktikan, sehingga rugi tetap ditanggung bank. Semua angka ilustratif.</li>
+        <li>Skor = laba bank (Rp juta) + 5 poin untuk tiap prediksi benar.</li>
+      </ul>
+    </details>
+    <button class="btn primary" id="start">Mulai latihan mandiri</button>
+    <p class="small muted" id="best"></p>
+  </section>
+
+  <section class="academic-guide" aria-label="Panduan akademik Mudharabah"><h2>Panduan Akademik &amp; Diskusi</h2><p><b>Capaian pembelajaran:</b> mahasiswa mampu menjelaskan nisbah sebagai instrumen insentif, membedakan risiko bisnis dari moral hazard, serta menggunakan informasi probabilistik untuk menilai tipe mudharib.</p><details><summary>Konsep inti dan batas model</summary><ul><li><b>Shahibul maal</b> menyediakan modal; <b>mudharib</b> mengelola usaha. Laba dibagi menurut nisbah yang disepakati.</li><li>Model membedakan tipe Amanah yang selalu berupaya tinggi dan tipe Oportunis yang memilih tingkat upaya berdasarkan manfaat ekonominya.</li><li>Informasi reputasi memiliki akurasi 75%; pembaruan keyakinan memakai aturan Bayes dengan prior 50%.</li><li>Seluruh parameter numerik bersifat ilustratif. Simulasi bukan fatwa atau penilaian kepatuhan akad pada kasus nyata.</li><li>Kerugian akibat kelalaian atau pelanggaran mudharib harus dibedakan dari risiko bisnis normal; simulasi menyederhanakan aspek fikih ini.</li></ul></details><details><summary>Pertanyaan diskusi kelas</summary><ul><li>Mengapa nisbah yang lebih besar bagi bank dapat menurunkan upaya mudharib oportunis?</li><li>Bagaimana perubahan prior dan akurasi sinyal memengaruhi keputusan akad?</li><li>Instrumen tata kelola apa yang dapat mengurangi asimetri informasi tanpa menghilangkan karakter kemitraan?</li><li>Bagaimana hasil berubah jika biaya upaya, peluang keberhasilan, atau kerugian bisnis berbeda?</li></ul></details></section>
+<section id="game" hidden>
+    <div class="steps" id="steps" aria-label="Tahap"></div>
+    <div id="stage" style="margin-top:16px"></div>
+  </section>
+
+  <p class="foot">Prototipe pembelajaran. Parameter ilustratif, bukan estimasi empiris.</p>
+</div>
+
+<script>
+/*MODEL*/
+const P={K:100,pi:40,loss:35,cost:8,ph:.8,pl:.4,acc:.75,rounds:5,bonus:5};
+function bankEV(n,eff){const p=eff==='high'?P.ph:P.pl;return p*n*P.pi-(1-p)*P.loss}
+function oppEffort(n){return (P.ph-P.pl)*(1-n)*P.pi>=P.cost-1e-9?'high':'low'}
+function effortFor(type,n){return type==='Amanah'?'high':oppEffort(n)}
+function posterior(k){const a=P.acc,x=Math.pow(a,k)*Math.pow(1-a,2-k),y=Math.pow(1-a,k)*Math.pow(a,2-k);return x/(x+y)}
+/*ENDMODEL*/
+
+const AV=[{n:'Zahra',e:'🧕',b:'toko kerudung daring'},{n:'Rafi',e:'🧑‍💼',b:'jasa percetakan'},{n:'Mira',e:'👩‍🌾',b:'budidaya hidroponik'},{n:'Rizal',e:'👨‍🍳',b:'warung makan'},{n:'Lina',e:'👩‍🔧',b:'bengkel motor listrik'}];
+const CL={
+  Amanah:['Laporan usaha selalu masuk tepat waktu','Dikenal jujur oleh pemasok dan pelanggan','Pernah melunasi kewajiban lebih cepat dari jadwal','Rutin membuka pembukuan kepada mitra'],
+  Oportunis:['Dua kali terlambat menyetor laporan usaha','Pernah memindahkan dana ke usaha lain tanpa izin','Pembukuan sulit diperiksa dan sering berubah','Lebih sering membahas porsi laba daripada rencana usaha']
+};
+const $=s=>document.querySelector(s);
+const STAGES=['Cerita','Akad','Prediksi','Hasil'];
+let S=null;
+
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+const rp=x=>{const v=Math.round(x*10)/10;return (v<0?'−':'')+'Rp'+Math.abs(v).toString().replace('.',',')+' jt'};
+const sg=x=>(x>0?'+':'')+rp(x).replace(/^Rp/,'Rp');
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+
+function showBest(){const b=lsGet('mg_best');$('#best').textContent=b?('Skor terbaik di perangkat ini: '+b):''}
+
+function newGame(){S={r:1,score:0,correct:0,log:[],stage:0};$('#intro').hidden=true;$('#game').hidden=false;$('#stats').hidden=false;startRound()}
+
+function startRound(){
+  const type=Math.random()<.5?'Amanah':'Oportunis';
+  const other=type==='Amanah'?'Oportunis':'Amanah';
+  const used={Amanah:shuffle(CL.Amanah),Oportunis:shuffle(CL.Oportunis)};
+  const clues=[];let k=0;
+  for(let i=0;i<2;i++){const t=Math.random()<P.acc?type:other;if(t==='Amanah')k++;clues.push({t,text:used[t].pop()})}
+  S.cur={av:AV[(S.r-1)%AV.length],type,clues,k,q:posterior(k),n:.4,pred:null,hint:false,res:null};
+  S.stage=0;render();
+}
+
+function head(){$('#sRound').textContent=S.r+'/'+P.rounds;$('#sScore').textContent=(Math.round(S.score*10)/10).toString().replace('.',',')}
+function steps(){$('#steps').innerHTML=STAGES.map((s,i)=>'<div class="'+(i===S.stage?'on':i<S.stage?'done':'')+'">'+(i+1)+'. '+s+'</div>').join('')}
+
+function render(){
+  head();steps();const c=S.cur,st=$('#stage');
+  if(S.stage===0){
+    st.innerHTML='<div class="card"><div class="who"><div class="av" aria-hidden="true">'+c.av.e+'</div><div><h2>'+c.av.n+'</h2><p class="muted">Mengajukan pembiayaan Rp100 juta untuk usaha '+c.av.b+'.</p></div></div>'
+    +'<div class="label">Petunjuk dari riwayat</div><ul class="clues">'+c.clues.map(x=>'<li>'+x.text+'</li>').join('')+'</ul>'
+    +'<p class="small muted">Petunjuk tidak selalu sesuai tipe aslinya. Sekitar 1 dari 4 petunjuk menyesatkan.</p>'
+    +'<button class="btn primary" data-act="to1">Lanjut: atur akad</button></div>';
+  }else if(S.stage===1){
+    const n=Math.round(c.n*100);
+    st.innerHTML='<div class="card"><h2>Tetapkan nisbah bagi hasil</h2>'
+    +'<div class="split"><div class="box"><b id="vBank">'+n+'%</b><span>Bagian bank</span></div><div class="box"><b id="vMud">'+(100-n)+'%</b><span>Bagian '+c.av.n+'</span></div></div>'
+    +'<input type="range" id="nis" min="10" max="90" step="5" value="'+n+'" aria-label="Nisbah bank dalam persen">'
+    +'<div class="row small muted" style="justify-content:space-between"><span>10%</span><span>90%</span></div>'
+    +'<div id="hintBox">'+(c.hint?hintHtml(c):'<button class="btn" data-act="hint">Hitung peluang Amanah dari petunjuk</button>')+'</div>'
+    +'<button class="btn primary" data-act="to2">Kunci akad</button></div>';
+  }else if(S.stage===2){
+    st.innerHTML='<div class="card"><h2>Prediksi perilaku '+c.av.n+'</h2><p class="muted">Dengan nisbah bank '+Math.round(c.n*100)+'%, apa yang akan dipilih nasabah? Prediksi dikunci sebelum hasil dibuka.</p>'
+    +'<div class="choice"><button class="opt" data-act="pred" data-v="high" aria-pressed="'+(c.pred==='high')+'"><strong>Kerja keras</strong><span class="small muted">Peluang berhasil 80%</span></button>'
+    +'<button class="opt" data-act="pred" data-v="low" aria-pressed="'+(c.pred==='low')+'"><strong>Kerja santai</strong><span class="small muted">Peluang berhasil 40%</span></button></div>'
+    +'<button class="btn primary" data-act="reveal" '+(c.pred?'':'disabled')+'>Kunci prediksi dan buka hasil</button></div>';
+  }else{resultView(st,c)}
+}
+
+function hintHtml(c){const q=Math.round(c.q*100);return '<div class="hint"><b>Peluang Amanah menurut petunjuk: '+q+'%</b><div class="small muted">Dihitung dengan aturan Bayes dari peluang awal 50% dan ketepatan petunjuk 75%. Ini peluang bersyarat pada petunjuk, bukan kepastian.</div></div>'}
+
+function resultView(st,c){
+  const r=c.res,n=c.n,effTxt=r.eff==='high'?'bekerja keras':'bekerja santai';
+  const share=Math.round((1-n)*100);
+  let why;
+  if(c.type==='Amanah')why=c.av.n+' bertipe Amanah, jadi ia bekerja keras berapa pun nisbahnya.';
+  else if(r.eff==='high')why=c.av.n+' bertipe Oportunis, tetapi bagiannya ('+share+'%) masih di atas batas 50%, sehingga kerja keras tetap menguntungkan baginya.';
+  else why=c.av.n+' bertipe Oportunis. Bagiannya hanya '+share+'%. Di bawah 50%, tambahan peluang berhasil tidak sebanding dengan biaya Rp'+P.cost+' juta, jadi ia memilih santai (moral hazard).';
+  const evH=bankEV(n,'high'),evL=bankEV(n,'low');
+  st.innerHTML='<div class="card"><div class="who"><div class="av" aria-hidden="true">'+c.av.e+'</div><div><h2>'+c.av.n+' memilih '+effTxt+'</h2>'
+  +'<span class="badge '+(r.ok?'good':'bad')+'">Prediksi '+(r.ok?'benar (+5)':'meleset')+'</span> <span class="badge info">Tipe: '+c.type+'</span></div></div>'
+  +'<p>'+why+'</p>'
+  +'<div class="split"><div class="box"><b style="color:var(--'+(r.bank>=0?'good':'bad')+')">'+sg(r.bank)+'</b><span>Hasil bank · usaha '+(r.success?'berhasil':'gagal')+'</span></div>'
+  +'<div class="box"><b style="color:var(--'+(r.mud>=0?'good':'bad')+')">'+sg(r.mud)+'</b><span>Hasil nasabah</span></div></div>'
+  +'<div class="scroll"><table><thead><tr><th>Harapan laba bank pada nisbah '+Math.round(n*100)+'%</th><th>Rp juta</th></tr></thead><tbody>'
+  +'<tr><td>Jika nasabah kerja keras</td><td>'+sg(evH)+'</td></tr><tr><td>Jika nasabah kerja santai</td><td>'+sg(evL)+'</td></tr></tbody></table></div>'
+  +'<div class="label">Harapan laba bank menurut nisbah</div>'+chart(n,c.type)
+  +'<p class="small muted">Kurva Oportunis patah di nisbah 50%: di atas titik itu nasabah beralih ke kerja santai dan harapan laba bank jatuh. Petunjuk memberi peluang Amanah '+Math.round(c.q*100)+'%, sedangkan tipe aslinya adalah '+c.type+'.</p>'
+  +'<button class="btn primary" data-act="next">'+(S.r>=P.rounds?'Lihat ringkasan':'Ronde berikutnya')+'</button></div>';
+}
+
+function chart(n,type){
+  const X0=44,X1=616,Y0=196,Y1=18,xmin=10,xmax=90,ymin=-15,ymax=25;
+  const X=v=>X0+(v-xmin)/(xmax-xmin)*(X1-X0),Y=v=>Y0-(v-ymin)/(ymax-ymin)*(Y0-Y1);
+  let g='',a='',o1='',o2='';
+  [-10,0,10,20].forEach(v=>{g+='<line class="gl" x1="'+X0+'" x2="'+X1+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="ax" x="'+(X0-6)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>'});
+  [10,30,50,70,90].forEach(v=>{g+='<text class="ax" x="'+X(v)+'" y="'+(Y0+16)+'" text-anchor="middle">'+v+'%</text>'});
+  for(let v=xmin;v<=xmax;v++){
+    const f=v/100,pa=(v===xmin?'M':'L')+X(v).toFixed(1)+' '+Y(bankEV(f,'high')).toFixed(1)+' ';a+=pa;
+    const po=bankEV(f,oppEffort(f)),seg=(v<=50?'M':'M');
+    if(v<=50)o1+=(v===xmin?'M':'L')+X(v).toFixed(1)+' '+Y(po).toFixed(1)+' ';else o2+=(v===51?'M':'L')+X(v).toFixed(1)+' '+Y(po).toFixed(1)+' ';
+  }
+  const pn=Math.round(n*100),py=Y(type==='Amanah'?bankEV(n,'high'):bankEV(n,oppEffort(n)));
+  return '<svg viewBox="0 0 640 236" role="img" aria-label="Kurva harapan laba bank untuk nasabah Amanah dan Oportunis menurut nisbah bank">'
+  +g+'<line x1="'+X(50)+'" x2="'+X(50)+'" y1="'+Y1+'" y2="'+Y0+'" stroke="var(--info)" stroke-dasharray="4 4"/>'
+  +'<text class="ax" x="'+(X(50)+6)+'" y="'+(Y1+12)+'" style="fill:var(--info)">batas insentif 50%</text>'
+  +'<path d="'+a+'" fill="none" stroke="var(--good)" stroke-width="2.5"/><path d="'+o1+'" fill="none" stroke="var(--bad)" stroke-width="2.5"/><path d="'+o2+'" fill="none" stroke="var(--bad)" stroke-width="2.5"/>'
+  +'<line x1="'+X(pn)+'" x2="'+X(pn)+'" y1="'+Y1+'" y2="'+Y0+'" stroke="var(--accent)" stroke-width="1.5"/><circle cx="'+X(pn)+'" cy="'+py+'" r="5" fill="var(--accent)"/>'
+  +'<text class="ax" x="'+X1+'" y="228" text-anchor="end">nisbah bank</text>'
+  +'<g><rect x="'+(X0+10)+'" y="30" width="14" height="4" fill="var(--good)"/><text class="ax" x="'+(X0+32)+'" y="36">Amanah</text>'
+  +'<rect x="'+(X0+10)+'" y="54" width="14" height="4" fill="var(--bad)"/><text class="ax" x="'+(X0+32)+'" y="60">Oportunis</text>'
+  +'<circle cx="'+(X0+17)+'" cy="80" r="5" fill="var(--accent)"/><text class="ax" x="'+(X0+32)+'" y="86">pilihan Anda</text></g></svg>';
+}
+
+function reveal(){
+  const c=S.cur,eff=effortFor(c.type,c.n),p=eff==='high'?P.ph:P.pl,success=Math.random()<p;
+  const bank=success?c.n*P.pi:-P.loss,ec=eff==='high'?P.cost:0,mud=(success?(1-c.n)*P.pi:0)-ec,ok=c.pred===eff;
+  c.res={eff,success,bank,mud,ok};S.score+=bank+(ok?P.bonus:0);if(ok)S.correct++;S.log.push({n:c.n,ok,bank});S.stage=3;render();
+}
+
+function endView(){
+  head();$('#steps').innerHTML='';const best=Number(lsGet('mg_best')||'-9999'),sc=Math.round(S.score*10)/10;
+  if(sc>best)lsSet('mg_best',String(sc));
+  const acc=Math.round(S.correct/P.rounds*100),avg=Math.round(S.log.reduce((s,x)=>s+x.n,0)/S.log.length*100);
+  const over=S.log.filter(x=>x.n>.5).length;
+  const msg=over>=3?'Anda sering menetapkan nisbah di atas 50%. Itu menarik bagi bank jika nasabahnya Amanah, tetapi memancing kerja santai pada nasabah Oportunis.':avg<=35?'Nisbah rata-rata Anda rendah. Insentif nasabah aman, tetapi bank melepas bagian laba yang sebenarnya masih bisa diambil.':'Nisbah Anda dekat batas insentif. Itu pola yang masuk akal ketika tipe nasabah tidak terlihat.';
+  $('#stage').innerHTML='<div class="card"><h2>Ringkasan latihan</h2>'
+  +'<div class="split"><div class="box"><b>'+sc.toString().replace('.',',')+'</b><span>Skor akhir</span></div><div class="box"><b>'+acc+'%</b><span>Prediksi benar ('+S.correct+'/'+P.rounds+')</span></div></div>'
+  +'<div class="scroll"><table><thead><tr><th>Ronde</th><th>Nisbah bank</th><th>Prediksi</th><th>Laba bank</th></tr></thead><tbody>'
+  +S.log.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(x.n*100)+'%</td><td>'+(x.ok?'benar':'meleset')+'</td><td>'+sg(x.bank)+'</td></tr>').join('')+'</tbody></table></div>'
+  +'<p>'+msg+'</p>'
+  +'<div class="hint"><b>Pelajaran inti.</b> Ketika upaya nasabah tidak teramati, nisbah bukan sekadar pembagian laba. Nisbah menentukan insentif. Batas 50% di model ini adalah titik di mana nasabah oportunis masih mau bekerja keras.</div>'
+  +'<div class="row"><button class="btn" type="button" data-act="export">Ekspor hasil (JSON)</button><button class="btn primary" data-act="again">Main lagi</button></div></div>';
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='to1'){S.stage=1;render()}
+  else if(a==='hint'){S.cur.hint=true;$('#hintBox').innerHTML=hintHtml(S.cur)}
+  else if(a==='to2'){S.stage=2;render()}
+  else if(a==='pred'){S.cur.pred=b.dataset.v;render()}
+  else if(a==='reveal'){reveal()}
+  else if(a==='next'){if(S.r>=P.rounds){S.stage=4;endView()}else{S.r++;startRound()}}
+  else if(a==='export'){exportMudResults()}
+  else if(a==='again'){newGame()}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='nis'){const v=Number(e.target.value);S.cur.n=v/100;$('#vBank').textContent=v+'%';$('#vMud').textContent=(100-v)+'%'}
+});
+function exportMudResults(){if(!S||!S.log.length)return;const payload={game:'Mudharabah Game',exportedAt:new Date().toISOString(),parameters:P,score:S.score,correctPredictions:S.correct,rounds:S.log};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hasil-mudharabah-game.json';a.click();URL.revokeObjectURL(url);}
+$('#start').addEventListener('click',newGame);
+showBest();
+</script>
+
+</body></html>
