@@ -821,8 +821,8 @@ function playMudharabah(){
  if(!mudCurrent){box.innerHTML='<b>Ambil petunjuk Bayesian terlebih dahulu.</b> Setelah melihat sinyal, tetapkan nisbah dan prediksi perilaku.';return}
  if(mudCurrent.prior!==prior||mudCurrent.accuracy!==accuracy){mudCurrent=null;document.getElementById('mudSignalDisplay').textContent='Parameter berubah — ambil petunjuk lagi';box.innerHTML='<b>Prior atau akurasi berubah.</b> Ambil petunjuk baru agar posterior dihitung dari parameter yang sama.';return}
  const q=mudPosterior(prior,accuracy,mudCurrent.signals),bne=mudSolveBNE(q),type=mudCurrent.type,effort=type==='trust'?'high':mudOppEffort(share),success=Math.random()<(effort==='high'?.8:.4),gross=success ? 0.40*capital : -0.35*capital;
- const bankGain=success?gross*share/100:gross,effortCost=effort==='high'?.08*capital:0,customerGain=(success?gross*(100-share)/100:0)-effortCost,roi=bankGain/capital*100,correct=prediction===effort;
- mudGameState.score+=roi+(correct?5:0);mudGameState.profit+=bankGain;
+ const bankGain=success?gross*share/100:gross,effortCost=effort==='high' ? 0.08*capital : 0,customerGain=(success?gross*(100-share)/100:0)-effortCost,roi=bankGain/capital*100,correct=prediction===effort;
+ const equilibriumBonus=Math.abs(share-bne.share)<=2.5?5:0;mudGameState.score+=roi+(correct?5:0)+equilibriumBonus;mudGameState.profit+=bankGain;
  mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals:mudCurrent.signals,posterior:q,share,bne:bne.share,effort,prediction,correct,bankGain,roi,type,success});
  const note=type==='trust'?'Nasabah Amanah memilih high effort.':'Nasabah Oportunis merespons insentif nisbah: '+(effort==='high'?'high effort.':'low effort (moral hazard).');
  box.innerHTML='<b>Hasil ronde '+mudGameState.round+'</b><br>'+ (role==='bank'?'Peran Anda: Shahibul Maal (Bank).':'Peran Anda: Mudharib (Nasabah).')+
@@ -830,7 +830,7 @@ function playMudharabah(){
  '<br>Nisbah pilihan bank: '+share+'%; nisbah best response BNE: <b>'+bne.share+'%</b>'+
  '<br>Expected payoff bank pada nisbah pilihan (berdasarkan posterior): '+mudFormatRp(mudExpectedEV(share,q)*capital/100)+'; BNE expected payoff: '+mudFormatRp(bne.ev*capital/100)+
  '<br>Perilaku aktual: <b>'+(effort==='high'?'Kerja keras':'Kerja santai')+'</b>; hasil usaha: '+(success?'berhasil':'gagal')+
- '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' = '+(roi+(correct?5:0)).toFixed(1)+' poin</b>'+
+ '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' (prediksi) + '+equilibriumBonus+' (BNE) = '+(roi+(correct?5:0)+equilibriumBonus).toFixed(1)+' poin</b>'+
  '<br>Prediksi Anda: '+(correct?'benar (+5)':'belum tepat')+'. '+note+
  '<div style="margin-top:10px;padding:10px;border:1px solid #344b7c;border-radius:10px">Prior '+prior+'% → posterior '+Math.round(q*100)+'% · sinyal positif '+mudCurrent.signals+'/2 · akurasi '+accuracy+'%.<br><b>Interpretasi:</b> '+(Math.abs(share-bne.share)<=2.5?'Nisbah pilihan sesuai best response bank pada grid 5%.':'Nisbah pilihan berbeda dari best response bank.')+'</div>';
  box.insertAdjacentHTML('beforeend',mudharabahChart(share,capital,type,effort,success?'success':'failure'));
