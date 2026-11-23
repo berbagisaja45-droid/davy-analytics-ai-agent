@@ -831,11 +831,11 @@ function playMudharabah(){
  const q=mudPosterior(prior,accuracy,mudCurrent.signals),pbe=mudSolvePBE(q),type=mudCurrent.type,effort=mudBorrowerBestResponse(type,share),success=Math.random()<(effort==='high'?.8:.4),gross=success ? 0.40*capital : -0.35*capital;
  const bankGain=success?gross*share/100:gross,effortCost=effort==='high' ? 0.08*capital : 0,customerGain=(success?gross*(100-share)/100:0)-effortCost,roi=bankGain/capital*100,correct=prediction===effort;
  const equilibriumBonus=Math.abs(share-pbe.share)<=2.5?5:0;mudGameState.score+=roi+(correct?5:0)+equilibriumBonus;mudGameState.profit+=bankGain;
- mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals:mudCurrent.signals,posterior:q,share,bne:pbe.share,effort,prediction,correct,equilibriumBonus,bankGain,roi,type,success});
+ mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals:mudCurrent.signals,posterior:q,share,pbeShare:pbe.share,effort,prediction,correct,equilibriumBonus,bankGain,roi,type,success});
  const note=type==='trust'?'Nasabah Amanah memilih high effort.':'Nasabah Oportunis merespons insentif nisbah: '+(effort==='high'?'high effort.':'low effort (moral hazard).');
  box.innerHTML='<b>Hasil ronde '+mudGameState.round+'</b><br>'+ (role==='bank'?'Peran Anda: Shahibul Maal (Bank).':'Peran Anda: Mudharib (Nasabah).')+
  '<br>Posterior Amanah (Bayes): <b>'+Math.round(q*100)+'%</b>; Oportunis: '+Math.round((1-q)*100)+'%'+
- '<br>Nisbah pilihan bank: '+share+'%; nisbah PBE (nisbah optimal bank): <b>'+bne.share+'%</b>'+
+ '<br>Nisbah pilihan bank: '+share+'%; nisbah PBE (nisbah optimal bank): <b>'+pbe.share+'%</b>'+
  '<br>Expected payoff bank pada nisbah pilihan (berdasarkan posterior): '+mudFormatRp(mudExpectedEV(share,q)*capital/100)+'; PBE expected payoff: '+mudFormatRp(pbe.ev*capital/100)+
  '<br>Perilaku aktual: <b>'+(effort==='high'?'Kerja keras':'Kerja santai')+'</b>; hasil usaha: '+(success?'berhasil':'gagal')+
  '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' (prediksi) + '+equilibriumBonus+' (PBE) = '+(roi+(correct?5:0)+equilibriumBonus).toFixed(1)+' poin</b>'+
