@@ -781,7 +781,8 @@ renderConversation('research');
  if(!isSupabaseRecovery){const initial=currentHash.slice(1);activate(screens[initial]?initial:'home');}
 })();
 
-let mudGameState={round:1,totalRounds:5,score:0,profit:0,history:[]};\nlet mudCurrent=null;
+let mudGameState={round:1,totalRounds:5,score:0,profit:0,history:[]};
+let mudCurrent=null;
 function mudFormatRp(v){return 'Rp '+Math.round(v).toLocaleString('id-ID')}
 function prepareMudRound(){
  const prior=Number(document.getElementById('mudPrior').value),accuracy=Number(document.getElementById('mudAccuracy').value);
