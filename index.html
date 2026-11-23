@@ -805,14 +805,22 @@ function mudBankEV(share,effort){
  const n=share/100,p=effort==='high'?.8:.4;
  return p*n*40-(1-p)*35;
 }
-function mudExpectedEV(share,q){const opp=mudOppEffort(share);return q*mudBankEV(share,'high')+(1-q)*mudBankEV(share,opp)}
-function mudSolveBNE(q){
+function mudBorrowerBestResponse(type,share){return type==='trust'?'high':mudOppEffort(share)}
+function mudExpectedEV(share,q){
+ const eA=mudBorrowerBestResponse('trust',share),eO=mudBorrowerBestResponse('opportunist',share);
+ return q*mudBankEV(share,eA)+(1-q)*mudBankEV(share,eO);
+}
+function mudSolvePBE(q){
  let best={share:10,ev:-Infinity};
  for(let n=10;n<=90;n+=5){
-  const opp=mudOppEffort(n),ev=q*mudBankEV(n,'high')+(1-q)*mudBankEV(n,opp);
-  if(ev>best.ev+1e-9)best={share:n,ev,opportunistEffort:opp};
+  const effortA=mudBorrowerBestResponse('trust',n),effortO=mudBorrowerBestResponse('opportunist',n),ev=mudExpectedEV(n,q);
+  if(ev>best.ev+1e-9)best={share:n,ev,effortA,effortO};
  }
- return best;
+ return {share:best.share,ev:best.ev,effortA:best.effortA,effortO:best.effortO,
+  beliefA:q,beliefO:1-q,bayesConsistent:true,sequentiallyRational:true,
+  bankStrategy:'Choose the share maximizing expected payoff conditional on the private signal',
+  borrowerStrategy:'Each type chooses effort maximizing its own expected payoff after observing the contract',
+  equilibriumConcept:'Perfect Bayesian Equilibrium (PBE)'};
 }
 function playMudharabah(){
  const role=document.getElementById('mudRole').value,share=Number(document.getElementById('mudShare').value),capital=Number(document.getElementById('mudCapital').value),prior=Number(document.getElementById('mudPrior').value),accuracy=Number(document.getElementById('mudAccuracy').value),prediction=document.getElementById('mudPrediction').value,box=document.getElementById('mudResult');
@@ -820,19 +828,19 @@ function playMudharabah(){
  if(mudGameState.history.some(x=>x.round===mudGameState.round)){box.innerHTML='<b>Ronde ini sudah dinilai.</b> Tekan Ronde berikutnya.';return}
  if(!mudCurrent){box.innerHTML='<b>Ambil petunjuk Bayesian terlebih dahulu.</b> Setelah melihat sinyal, tetapkan nisbah dan prediksi perilaku.';return}
  if(mudCurrent.prior!==prior||mudCurrent.accuracy!==accuracy){mudCurrent=null;document.getElementById('mudSignalDisplay').textContent='Parameter berubah — ambil petunjuk lagi';box.innerHTML='<b>Prior atau akurasi berubah.</b> Ambil petunjuk baru agar posterior dihitung dari parameter yang sama.';return}
- const q=mudPosterior(prior,accuracy,mudCurrent.signals),bne=mudSolveBNE(q),type=mudCurrent.type,effort=type==='trust'?'high':mudOppEffort(share),success=Math.random()<(effort==='high'?.8:.4),gross=success ? 0.40*capital : -0.35*capital;
+ const q=mudPosterior(prior,accuracy,mudCurrent.signals),pbe=mudSolvePBE(q),type=mudCurrent.type,effort=mudBorrowerBestResponse(type,share),success=Math.random()<(effort==='high'?.8:.4),gross=success ? 0.40*capital : -0.35*capital;
  const bankGain=success?gross*share/100:gross,effortCost=effort==='high' ? 0.08*capital : 0,customerGain=(success?gross*(100-share)/100:0)-effortCost,roi=bankGain/capital*100,correct=prediction===effort;
- const equilibriumBonus=Math.abs(share-bne.share)<=2.5?5:0;mudGameState.score+=roi+(correct?5:0)+equilibriumBonus;mudGameState.profit+=bankGain;
- mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals:mudCurrent.signals,posterior:q,share,bne:bne.share,effort,prediction,correct,equilibriumBonus,bankGain,roi,type,success});
+ const equilibriumBonus=Math.abs(share-pbe.share)<=2.5?5:0;mudGameState.score+=roi+(correct?5:0)+equilibriumBonus;mudGameState.profit+=bankGain;
+ mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals:mudCurrent.signals,posterior:q,share,bne:pbe.share,effort,prediction,correct,equilibriumBonus,bankGain,roi,type,success});
  const note=type==='trust'?'Nasabah Amanah memilih high effort.':'Nasabah Oportunis merespons insentif nisbah: '+(effort==='high'?'high effort.':'low effort (moral hazard).');
  box.innerHTML='<b>Hasil ronde '+mudGameState.round+'</b><br>'+ (role==='bank'?'Peran Anda: Shahibul Maal (Bank).':'Peran Anda: Mudharib (Nasabah).')+
  '<br>Posterior Amanah (Bayes): <b>'+Math.round(q*100)+'%</b>; Oportunis: '+Math.round((1-q)*100)+'%'+
- '<br>Nisbah pilihan bank: '+share+'%; nisbah best response BNE: <b>'+bne.share+'%</b>'+
- '<br>Expected payoff bank pada nisbah pilihan (berdasarkan posterior): '+mudFormatRp(mudExpectedEV(share,q)*capital/100)+'; BNE expected payoff: '+mudFormatRp(bne.ev*capital/100)+
+ '<br>Nisbah pilihan bank: '+share+'%; nisbah PBE (nisbah optimal bank): <b>'+bne.share+'%</b>'+
+ '<br>Expected payoff bank pada nisbah pilihan (berdasarkan posterior): '+mudFormatRp(mudExpectedEV(share,q)*capital/100)+'; PBE expected payoff: '+mudFormatRp(pbe.ev*capital/100)+
  '<br>Perilaku aktual: <b>'+(effort==='high'?'Kerja keras':'Kerja santai')+'</b>; hasil usaha: '+(success?'berhasil':'gagal')+
- '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' (prediksi) + '+equilibriumBonus+' (BNE) = '+(roi+(correct?5:0)+equilibriumBonus).toFixed(1)+' poin</b>'+
+ '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' (prediksi) + '+equilibriumBonus+' (PBE) = '+(roi+(correct?5:0)+equilibriumBonus).toFixed(1)+' poin</b>'+
  '<br>Prediksi Anda: '+(correct?'benar (+5)':'belum tepat')+'. '+note+
- '<div style="margin-top:10px;padding:10px;border:1px solid #344b7c;border-radius:10px">Prior '+prior+'% → posterior '+Math.round(q*100)+'% · sinyal positif '+mudCurrent.signals+'/2 · akurasi '+accuracy+'%.<br><b>Interpretasi:</b> '+(Math.abs(share-bne.share)<=2.5?'Nisbah pilihan sesuai best response bank pada grid 5%.':'Nisbah pilihan berbeda dari best response bank.')+'</div><p>Untuk urutan keputusan bank lalu nasabah, PBE merupakan formulasi extensive-form yang lebih lengkap.</p>';
+ '<div style="margin-top:10px;padding:10px;border:1px solid #344b7c;border-radius:10px">Prior '+prior+'% → posterior '+Math.round(q*100)+'% · sinyal positif '+mudCurrent.signals+'/2 · akurasi '+accuracy+'%.<br><b>Interpretasi:</b> '+(Math.abs(share-bne.share)<=2.5?'Nisbah pilihan sesuai strategi bank sesuai PBE pada grid 5%.':'Nisbah pilihan berbeda dari strategi optimal bank.')+'</div><p>Untuk urutan keputusan bank lalu nasabah, PBE merupakan formulasi extensive-form yang lebih lengkap.</p>';
  box.insertAdjacentHTML('beforeend',mudharabahChart(share,capital,type,effort,success?'success':'failure'));
  box.insertAdjacentHTML('beforeend','<div style="margin-top:14px;padding:14px;border:1px solid #344b7c;border-radius:12px"><b>Akumulasi sementara</b><br>Skor total: <b>'+mudGameState.score.toFixed(1)+' poin</b><br>Total laba/rugi bank: <b>'+mudFormatRp(mudGameState.profit)+'</b><br>Ronde: '+mudGameState.history.length+'/5<button class="btn primary" type="button" style="width:100%;margin-top:12px" onclick="nextMudharabahRound()">'+(mudGameState.round>=5?'Lihat ringkasan akhir':'Ronde berikutnya')+'</button></div>');
  document.getElementById('mudRound').textContent='Ronde '+mudGameState.round+' selesai';
@@ -846,7 +854,7 @@ function nextMudharabahRound(){
 }
 function showMudharabahSummary(){
  const box=document.getElementById('mudResult'),rows=mudGameState.history.map(x=>'<tr><td>'+x.round+'</td><td>'+x.prior+'%</td><td>'+Math.round(x.posterior*100)+'%</td><td>'+x.share+'%</td><td>'+x.bne+'%</td><td>'+(x.correct?'Benar':'Meleset')+'</td><td>'+(x.equilibriumBonus?'+5':'0')+'</td><td>'+mudFormatRp(x.bankGain)+'</td></tr>').join('');
- box.innerHTML='<h3>Ringkasan Bayesian Mudharabah — 5 ronde</h3><p><b>Skor kumulatif: '+mudGameState.score.toFixed(1)+' poin</b><br>Total laba/rugi bank: '+mudFormatRp(mudGameState.profit)+'</p><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Ronde</th><th>Prior</th><th>Posterior</th><th>Nisbah pemain</th><th>Nisbah BNE</th><th>Prediksi</th><th>Bonus BNE</th><th>Laba</th></tr></thead><tbody>'+rows+'</tbody></table></div><p>Penilaian mencakup Bayesian updating, keputusan nisbah, akurasi prediksi, dan payoff aktual. BNE yang ditampilkan adalah benchmark best response bank dengan respons effort optimal nasabah dalam model diskret. Karena keputusan berlangsung berurutan, formulasi extensive-form yang lebih lengkap adalah Perfect Bayesian Equilibrium (PBE).</p><button class="btn primary" style="width:100%" onclick="resetMudharabah()">Main lagi</button>';
+ box.innerHTML='<h3>Ringkasan Bayesian Mudharabah — 5 ronde</h3><p><b>Skor kumulatif: '+mudGameState.score.toFixed(1)+' poin</b><br>Total laba/rugi bank: '+mudFormatRp(mudGameState.profit)+'</p><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Ronde</th><th>Prior</th><th>Posterior</th><th>Nisbah pemain</th><th>Nisbah PBE</th><th>Prediksi</th><th>Bonus PBE</th><th>Laba</th></tr></thead><tbody>'+rows+'</tbody></table></div><p>Penilaian mencakup Bayesian updating, keputusan nisbah, akurasi prediksi, dan payoff aktual. PBE menuntut strategi bank optimal berdasarkan posterior sinyal, strategi effort optimal untuk setiap tipe nasabah setelah mengamati kontrak, dan belief bank yang konsisten dengan aturan Bayes. Dalam versi simulasi ini, sinyal privat diterima bank; tipe nasabah mengetahui tipenya sendiri; respons effort tiap tipe dihitung optimal untuk setiap nisbah.</p><button class="btn primary" style="width:100%" onclick="resetMudharabah()">Main lagi</button>';
  document.getElementById('mudRound').textContent='Permainan selesai';
 }
 function mudharabahChart(selectedShare,capital,type,effort,outcome){
