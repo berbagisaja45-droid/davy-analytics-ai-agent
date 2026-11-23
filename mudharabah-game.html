@@ -251,7 +251,7 @@ function endView(){
   $('#stage').innerHTML='<div class="card"><h2>Ringkasan latihan</h2>'
   +'<div class="split"><div class="box"><b>'+sc.toString().replace('.',',')+'</b><span>Skor akhir</span></div><div class="box"><b>'+acc+'%</b><span>Prediksi benar ('+S.correct+'/'+P.rounds+')</span></div></div>'
   +'<div class="scroll"><table><thead><tr><th>Ronde</th><th>Prior</th><th>Posterior Amanah</th><th>Nisbah pemain</th><th>Nisbah PBE</th><th>Prediksi</th><th>Laba bank</th></tr></thead><tbody>'
-  +S.log.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(x.prior*100)+'%</td><td>'+Math.round(x.posterior*100)+'%</td><td>'+Math.round(x.n*100)+'%</td><td>'+Math.round(x.bne*100)+'%</td><td>'+(x.ok?'benar':'meleset')+'</td><td>'+sg(x.bank)+'</td></tr>').join('')+'</tbody></table></div>'
+  +S.log.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(x.prior*100)+'%</td><td>'+Math.round(x.posterior*100)+'%</td><td>'+Math.round(x.n*100)+'%</td><td>'+Math.round(x.pbe*100)+'%</td><td>'+(x.ok?'benar':'meleset')+'</td><td>'+sg(x.bank)+'</td></tr>').join('')+'</tbody></table></div>'
   +'<p>'+msg+'</p>'
   +'<div class="hint"><b>Pelajaran inti.</b> Ketika upaya nasabah tidak teramati, nisbah bukan sekadar pembagian laba. Nisbah menentukan insentif. Batas 50% di model ini adalah titik di mana nasabah oportunis masih mau bekerja keras.</div>'
   +'<div class="row"><button class="btn" type="button" data-act="export">Ekspor hasil (JSON)</button><button class="btn primary" data-act="again">Main lagi</button></div></div>';
