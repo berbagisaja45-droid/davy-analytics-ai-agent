@@ -129,8 +129,9 @@ function bankEV(n,eff){const p=eff==='high'?P.ph:P.pl;return p*n*P.pi-(1-p)*P.lo
 function oppEffort(n){return (P.ph-P.pl)*(1-n)*P.pi>=P.cost-1e-9?'high':'low'}
 function effortFor(type,n){return type==='Amanah'?'high':oppEffort(n)}
 function posterior(k){const a=P.acc,p=P.prior,likeA=Math.pow(a,k)*Math.pow(1-a,2-k),likeO=Math.pow(1-a,k)*Math.pow(a,2-k);return (p*likeA)/(p*likeA+(1-p)*likeO)}
-function equilibrium(n,q){const opp=oppEffort(n),evA=bankEV(n,'high'),evO=bankEV(n,opp);return q*evA+(1-q)*evO}
-function solveBNE(q){let best={n:.1,ev:-Infinity};for(let pct=10;pct<=90;pct+=5){const n=pct/100,ev=equilibrium(n,q);if(ev>best.ev+1e-9)best={n,ev,oppEffort:oppEffort(n)}}return best}
+function borrowerBestResponse(type,n){return effortFor(type,n)}
+function equilibrium(n,q){const eA=borrowerBestResponse('Amanah',n),eO=borrowerBestResponse('Oportunis',n);return q*bankEV(n,eA)+(1-q)*bankEV(n,eO)}
+function solvePBE(q){let best={n:.1,ev:-Infinity};for(let pct=10;pct<=90;pct+=5){const n=pct/100,eA=borrowerBestResponse('Amanah',n),eO=borrowerBestResponse('Oportunis',n),ev=equilibrium(n,q);if(ev>best.ev+1e-9)best={n,ev,eA,eO}}return {n:best.n,ev:best.ev,effortA:best.eA,effortO:best.eO,beliefA:q,beliefO:1-q,bayesConsistent:true,sequentiallyRational:true,concept:'Perfect Bayesian Equilibrium (PBE)'}}
 /*ENDMODEL*/
 
 const AV=[{n:'Zahra',e:'🧕',b:'toko kerudung daring'},{n:'Rafi',e:'🧑‍💼',b:'jasa percetakan'},{n:'Mira',e:'👩‍🌾',b:'budidaya hidroponik'},{n:'Rizal',e:'👨‍🍳',b:'warung makan'},{n:'Lina',e:'👩‍🔧',b:'bengkel motor listrik'}];
@@ -198,7 +199,7 @@ function resultView(st,c){
   if(c.type==='Amanah')why=c.av.n+' bertipe Amanah, jadi ia bekerja keras berapa pun nisbahnya.';
   else if(r.eff==='high')why=c.av.n+' bertipe Oportunis, tetapi bagiannya ('+share+'%) masih di atas batas 50%, sehingga kerja keras tetap menguntungkan baginya.';
   else why=c.av.n+' bertipe Oportunis. Bagiannya hanya '+share+'%. Di bawah 50%, tambahan peluang berhasil tidak sebanding dengan biaya Rp'+P.cost+' juta, jadi ia memilih santai (moral hazard).';
-  const evH=bankEV(n,'high'),evL=bankEV(n,'low'),bne=solveBNE(c.q),playerGap=Math.abs(n-bne.n)<.026;
+  const evH=bankEV(n,'high'),evL=bankEV(n,'low'),pbe=solvePBE(c.q),playerGap=Math.abs(n-pbe.n)<.026;
   st.innerHTML='<div class="card"><div class="who"><div class="av" aria-hidden="true">'+c.av.e+'</div><div><h2>'+c.av.n+' memilih '+effTxt+'</h2>'
   +'<span class="badge '+(r.ok?'good':'bad')+'">Prediksi '+(r.ok?'benar (+5)':'meleset')+'</span> <span class="badge info">Tipe: '+c.type+'</span></div></div>'
   +'<p>'+why+'</p>'
@@ -206,7 +207,7 @@ function resultView(st,c){
   +'<div class="box"><b style="color:var(--'+(r.mud>=0?'good':'bad')+')">'+sg(r.mud)+'</b><span>Hasil nasabah</span></div></div>'
   +'<div class="scroll"><table><thead><tr><th>Harapan laba bank pada nisbah '+Math.round(n*100)+'%</th><th>Rp juta</th></tr></thead><tbody>'
   +'<tr><td>Jika nasabah kerja keras</td><td>'+sg(evH)+'</td></tr><tr><td>Jika nasabah kerja santai</td><td>'+sg(evL)+'</td></tr></tbody></table></div>'
-  +'<div class="bne-panel"><b>Analisis Bayesian Nash Equilibrium</b><p>Prior Amanah: '+Math.round(P.prior*100)+'% → posterior setelah sinyal: <b>'+Math.round(c.q*100)+'%</b>. Expected payoff bank pada nisbah pilihan: <b>'+rp(equilibrium(n,c.q))+'</b>.</p><p>Nisbah best response bank (grid 5%): <b>'+Math.round(bne.n*100)+'%</b>; expected payoff: <b>'+rp(bne.ev)+'</b>. '+(playerGap?'Pilihan Anda berada pada nisbah equilibrium dalam toleransi 2,5 poin persentase (+5 poin).':'Pilihan Anda berbeda dari nisbah best response model.')+'</p><p>Bonus equilibrium ronde ini: <b>'+(r.aligned?'+5 poin':'0 poin')+'</b>.</p><p class="small muted">Respons nasabah dihitung optimal: Amanah memilih high effort; Oportunis memilih high effort hanya jika tambahan expected share menutup biaya usaha. BNE dihitung sebagai benchmark best response berbasis posterior. Karena bank bergerak sebelum nasabah memilih effort, formulasi extensive-form yang lebih lengkap adalah Perfect Bayesian Equilibrium (PBE).</p></div>'
+  +'<div class="bne-panel"><b>Analisis Bayesian Nash Equilibrium</b><p>Prior Amanah: '+Math.round(P.prior*100)+'% → posterior setelah sinyal: <b>'+Math.round(c.q*100)+'%</b>. Expected payoff bank pada nisbah pilihan: <b>'+rp(equilibrium(n,c.q))+'</b>.</p><p>Nisbah optimal bank menurut PBE (grid 5%): <b>'+Math.round(bne.n*100)+'%</b>; expected payoff: <b>'+rp(pbe.ev)+'</b>. '+(playerGap?'Pilihan Anda berada pada nisbah equilibrium dalam toleransi 2,5 poin persentase (+5 poin).':'Pilihan Anda berbeda dari nisbah best response model.')+'</p><p>Bonus PBE ronde ini: <b>'+(r.aligned?'+5 poin':'0 poin')+'</b>.</p><p class="small muted">Respons nasabah dihitung optimal: Amanah memilih high effort; Oportunis memilih high effort hanya jika tambahan expected share menutup biaya usaha. PBE menggabungkan strategi bank yang optimal berdasarkan posterior sinyal, respons effort optimal untuk masing-masing tipe nasabah setelah mengamati nisbah, dan belief bank yang konsisten dengan aturan Bayes. Bank menerima sinyal privat; nasabah mengetahui tipe dirinya sendiri.</p></div>'
   +'<div class="label">Harapan laba bank menurut nisbah</div>'+chart(n,c.type)
   +'<p class="small muted">Kurva Oportunis patah di nisbah 50%: di atas titik itu nasabah beralih ke kerja santai dan harapan laba bank jatuh. Petunjuk memberi peluang Amanah '+Math.round(c.q*100)+'%, sedangkan tipe aslinya adalah '+c.type+'.</p>'
   +'<button class="btn primary" data-act="next">'+(S.r>=P.rounds?'Lihat ringkasan':'Ronde berikutnya')+'</button></div>';
@@ -237,8 +238,8 @@ function chart(n,type){
 
 function reveal(){
   const c=S.cur,eff=effortFor(c.type,c.n),p=eff==='high'?P.ph:P.pl,success=Math.random()<p;
-  const bank=success?c.n*P.pi:-P.loss,ec=eff==='high'?P.cost:0,mud=(success?(1-c.n)*P.pi:0)-ec,ok=c.pred===eff,bne=solveBNE(c.q),aligned=Math.abs(c.n-bne.n)<.026;
-  c.res={eff,success,bank,mud,ok,bne,aligned};S.score+=bank+(ok?P.bonus:0)+(aligned?P.bonus:0);if(ok)S.correct++;S.log.push({n:c.n,ok,bank,prior:P.prior,posterior:c.q,bne:bne.n,aligned,expected:equilibrium(c.n,c.q)});S.stage=3;render();
+  const bank=success?c.n*P.pi:-P.loss,ec=eff==='high'?P.cost:0,mud=(success?(1-c.n)*P.pi:0)-ec,ok=c.pred===eff,bne=solveBNE(c.q),aligned=Math.abs(c.n-pbe.n)<.026;
+  c.res={eff,success,bank,mud,ok,pbe,aligned};S.score+=bank+(ok?P.bonus:0)+(aligned?P.bonus:0);if(ok)S.correct++;S.log.push({n:c.n,ok,bank,prior:P.prior,posterior:c.q,pbe:pbe.n,aligned,expected:equilibrium(c.n,c.q)});S.stage=3;render();
 }
 
 function endView(){
@@ -249,7 +250,7 @@ function endView(){
   const msg=over>=3?'Anda sering menetapkan nisbah di atas 50%. Itu menarik bagi bank jika nasabahnya Amanah, tetapi memancing kerja santai pada nasabah Oportunis.':avg<=35?'Nisbah rata-rata Anda rendah. Insentif nasabah aman, tetapi bank melepas bagian laba yang sebenarnya masih bisa diambil.':'Nisbah Anda dekat batas insentif. Itu pola yang masuk akal ketika tipe nasabah tidak terlihat.';
   $('#stage').innerHTML='<div class="card"><h2>Ringkasan latihan</h2>'
   +'<div class="split"><div class="box"><b>'+sc.toString().replace('.',',')+'</b><span>Skor akhir</span></div><div class="box"><b>'+acc+'%</b><span>Prediksi benar ('+S.correct+'/'+P.rounds+')</span></div></div>'
-  +'<div class="scroll"><table><thead><tr><th>Ronde</th><th>Prior</th><th>Posterior Amanah</th><th>Nisbah pemain</th><th>Nisbah BNE</th><th>Prediksi</th><th>Laba bank</th></tr></thead><tbody>'
+  +'<div class="scroll"><table><thead><tr><th>Ronde</th><th>Prior</th><th>Posterior Amanah</th><th>Nisbah pemain</th><th>Nisbah PBE</th><th>Prediksi</th><th>Laba bank</th></tr></thead><tbody>'
   +S.log.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+Math.round(x.prior*100)+'%</td><td>'+Math.round(x.posterior*100)+'%</td><td>'+Math.round(x.n*100)+'%</td><td>'+Math.round(x.bne*100)+'%</td><td>'+(x.ok?'benar':'meleset')+'</td><td>'+sg(x.bank)+'</td></tr>').join('')+'</tbody></table></div>'
   +'<p>'+msg+'</p>'
   +'<div class="hint"><b>Pelajaran inti.</b> Ketika upaya nasabah tidak teramati, nisbah bukan sekadar pembagian laba. Nisbah menentukan insentif. Batas 50% di model ini adalah titik di mana nasabah oportunis masih mau bekerja keras.</div>'
