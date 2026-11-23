@@ -184,7 +184,7 @@ function render(){
     +'<div class="news"><b>'+S.ev.t+'</b><div class="small muted">'+S.ev.d+'</div></div>'
     +'<button class="btn primary" data-act="to1">Lanjut: atur anggaran</button></div>';
   }else if(S.stage===1){
-    st.innerHTML='<div class="card"><h2>Bagi 100 poin anggaran</h2><div class="alloc" id="alloc"></div><div class="left" id="left"></div>'
+    st.innerHTML='<div class="card"><h2>Bagi 100 poin anggaran</h2><p class="small muted">Anggaran bersifat tetap 100 poin. Tombol + pada satu aktor otomatis mengambil 5 poin dari aktor lain dengan alokasi terbesar; tombol − memindahkan 5 poin ke aktor lain yang alokasinya paling kecil.</p><div class="alloc" id="alloc"></div><div class="left" id="left"></div>'
     +'<button class="btn primary" id="lock" data-act="to2">Kunci anggaran</button></div>';
     drawAlloc();
   }else if(S.stage===2){
@@ -195,6 +195,18 @@ function render(){
   }else{resultView(st)}
 }
 
+function transferBudget(target,delta){
+ const a=S.alloc,others=ORG.map(o=>o.k).filter(k=>k!==target);
+ if(delta>0){
+  const donors=others.filter(k=>a[k]>=delta).sort((x,y)=>a[y]-a[x]);
+  if(!donors.length)return;
+  a[donors[0]]-=delta;a[target]+=delta;
+ }else if(delta<0){
+  const amount=Math.min(-delta,a[target]);if(!amount)return;
+  const receiver=others.sort((x,y)=>a[x]-a[y])[0];
+  a[target]-=amount;a[receiver]+=amount;
+ }
+}
 function drawAlloc(){
   const a=S.alloc,left=100-sum(a);
   $('#alloc').innerHTML=ORG.map(o=>'<div class="ar"><div class="ic" aria-hidden="true">'+o.e+'</div><div><div class="nm">'+o.n+'</div><div class="small muted">'+o.d+'</div><div class="bar"><i style="width:'+a[o.k]+'%"></i></div></div>'
@@ -204,12 +216,21 @@ function drawAlloc(){
   $('#lock').disabled=left!==0;
 }
 
+function bottleneck(r){
+ const chain=[{name:'Polisi',v:r.a,reason:'Peluang perkara masuk ke tahap penangkapan paling rendah.'},{name:'Jaksa',v:r.v,reason:'Peluang perkara tertangkap berlanjut hingga hukuman paling rendah.'},{name:'Hakim',v:r.s,reason:'Peluang putusan tepat waktu paling rendah.'}].sort((a,b)=>a.v-b.v);
+ if(r.over>0.1)return {name:'Pemasyarakatan',v:r.cap/r.load,reason:'Beban lapas melampaui kapasitas; pembinaan dan reintegrasi terhambat sehingga risiko residivisme meningkat.'};
+ return chain[0];
+}
 function advice(r){
-  if(r.over>0.1)return 'Lembaga pemasyarakatan kelebihan beban ('+pc(r.load/r.cap)+' dari kapasitas). Residivisme naik karena narapidana tidak terbina. Tambahkan anggaran Pemasyarakatan atau kurangi beban di hulu.';
-  if(r.a<0.4)return 'Kepastian ditangkap masih rendah ('+pc(r.a)+'). Menambah anggaran Polisi memberi dampak paling besar pada efek jera.';
-  if(r.v<0.55)return 'Banyak perkara tidak berujung hukuman (kepastian dihukum '+pc(r.v)+'). Jaksa menjadi hambatan efek jera.';
-  if(r.s<0.65)return 'Putusan masih lambat (kecepatan '+pc(r.s)+'). Hakim menjadi hambatan efek jera.';
-  return 'Alokasi relatif seimbang. Tiap tambahan poin ke satu lembaga kini memberi hasil yang makin kecil.';
+ const b=bottleneck(r);
+ if(b.name==='Pemasyarakatan')return 'Hambatan utama: Pemasyarakatan. '+b.reason+' Beban saat ini '+pc(r.load/r.cap)+' dari kapasitas.';
+ if(b.name==='Polisi')return 'Hambatan utama: Polisi. '+b.reason+' Kepastian tertangkap '+pc(r.a)+'.';
+ if(b.name==='Jaksa')return 'Hambatan utama: Jaksa. '+b.reason+' Kepastian dihukum '+pc(r.v)+'.';
+ return 'Hambatan utama: Hakim. '+b.reason+' Kecepatan putusan '+pc(r.s)+'.';
+}
+function jointPanel(r){
+ const b=bottleneck(r);
+ return '<div class="news"><b>Peluang gabungan efek jera: '+pc(r.D)+'</b><div class="ind">'+ind('Tertangkap · Polisi',r.a)+ind('Dihukum · Jaksa',r.v)+ind('Tepat waktu · Hakim',r.s)+'</div><p class="small muted">Hambatan sistem: <b>'+b.name+'</b>. '+b.reason+'</p></div>';
 }
 
 function resultView(st){
@@ -222,7 +243,7 @@ function resultView(st){
   +'<div class="label">Asal kejahatan</div><div class="stack" role="img" aria-label="Kejahatan baru '+wf+' persen, residivis '+(100-wf)+' persen"><i style="width:'+wf+'%;background:var(--accent)"></i><i style="width:'+(100-wf)+'%;background:var(--warn)"></i></div>'
   +'<div class="row small"><span><span style="color:var(--accent)">■</span> Pelaku baru '+f0(r.F)+' ('+wf+'%)</span><span><span style="color:var(--warn)">■</span> Residivis '+f0(r.R)+' ('+(100-wf)+'%)</span></div>'
   +'<div class="label">Indikator sistem</div><div class="ind">'+ind('Kepastian ditangkap',r.a)+ind('Kepastian dihukum',r.v)+ind('Kecepatan putusan',r.s)+ind('Beban lapas terhadap kapasitas',Math.min(1.5,r.load/r.cap),r.load/r.cap>1)+'</div>'
-  +'<p class="small muted">Efek jera tahun ini: '+pc(r.D)+' (kepastian ditangkap × dihukum × kecepatan).</p>'
+  +'<div class="label">Joint Probability: rantai efek jera</div>'+jointPanel(r)+'<p class="small muted">P(efek jera) = P(tertangkap) × P(dituntut hingga dihukum | tertangkap) × P(putusan tepat waktu | perkara diproses). Model ini memakai perkalian peluang bersyarat sebagai penyederhanaan pembelajaran.</p>'
   +'<div class="news"><b>Catatan kebijakan</b><div class="small muted">'+advice(r)+'</div></div>'
   +'<div class="label">Tren kejahatan</div>'+chart()
   +'<button class="btn primary" data-act="next">'+(S.year>=YEARS?'Lihat ringkasan':'Tahun berikutnya')+'</button></div>';
@@ -273,7 +294,7 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
   if(a==='scen'){scen=b.dataset.v;document.querySelectorAll('#scen .opt').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))}
   else if(a==='to1'){S.stage=1;render()}
-  else if(a==='adj'){const k=b.dataset.k,d=Number(b.dataset.d);S.alloc[k]=Math.max(0,Math.min(100,S.alloc[k]+d));drawAlloc();const nb=document.querySelector('[data-act="adj"][data-k="'+k+'"][data-d="'+d+'"]');if(nb)nb.focus()}
+  else if(a==='adj'){const k=b.dataset.k,d=Number(b.dataset.d);transferBudget(k,d);drawAlloc();const nb=document.querySelector('[data-act="adj"][data-k="'+k+'"][data-d="'+d+'"]');if(nb)nb.focus()}
   else if(a==='to2'){S.stage=2;S.pred=null;render()}
   else if(a==='pred'){S.pred=b.dataset.v;render()}
   else if(a==='run'){run()}
