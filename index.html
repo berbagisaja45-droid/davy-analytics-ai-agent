@@ -837,6 +837,7 @@ function playMudharabah(){
  '<br>Posterior Amanah (Bayes): <b>'+Math.round(q*100)+'%</b>; Oportunis: '+Math.round((1-q)*100)+'%'+
  '<br>Nisbah pilihan bank: '+share+'%; nisbah PBE (nisbah optimal bank): <b>'+pbe.share+'%</b>'+
  '<br>Expected payoff bank pada nisbah pilihan (berdasarkan posterior): '+mudFormatRp(mudExpectedEV(share,q)*capital/100)+'; PBE expected payoff: '+mudFormatRp(pbe.ev*capital/100)+
+ '<br><b>Strategi respons PBE:</b> Amanah → '+(pbe.effortA==='high'?'high effort':'low effort')+'; Oportunis → '+(pbe.effortO==='high'?'high effort':'low effort')+'.'
  '<br>Perilaku aktual: <b>'+(effort==='high'?'Kerja keras':'Kerja santai')+'</b>; hasil usaha: '+(success?'berhasil':'gagal')+
  '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' (prediksi) + '+equilibriumBonus+' (PBE) = '+(roi+(correct?5:0)+equilibriumBonus).toFixed(1)+' poin</b>'+
  '<br>Prediksi Anda: '+(correct?'benar (+5)':'belum tepat')+'. '+note+
