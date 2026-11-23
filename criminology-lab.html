@@ -1,0 +1,289 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Criminology Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: kolom sempit ala Battle of Choices. Header + stepper + satu kartu tahap. Dunia gelap navy, aksen biru es untuk peradilan. */
+:root{
+  --bg:#101b35; --panel:#16264b; --panel2:#1d3163; --line:#2c4278;
+  --fg:#eaf0ff; --muted:#9db0dd; --accent:#7db4ff; --accent-ink:#06142e;
+  --good:#5fd39a; --bad:#ff8585; --warn:#f2b84b;
+  --f-head:'Space Grotesk',system-ui,sans-serif; --f-body:'Inter',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--f-body);padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-head);margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{width:42px;height:42px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 17px var(--f-head)}
+.top h1{font-size:22px;line-height:1.1}
+.top small{color:var(--muted);display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.stats{margin-left:auto;display:flex;gap:8px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill b{color:var(--accent);font-weight:600}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.steps div{font-size:12px;text-align:center;padding:7px 4px;border-radius:8px;border:1px solid var(--line);color:var(--muted)}
+.steps .on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.steps .done{color:var(--fg)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.label{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.btn{font:600 15px var(--f-body);border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);padding:12px 16px;cursor:pointer;min-height:44px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,summary:focus-visible,.opt:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 160px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.box b{display:block;font:700 24px var(--f-head);font-variant-numeric:tabular-nums}
+.box span{font-size:12px;color:var(--muted)}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scen{grid-template-columns:1fr}
+.opt{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;text-align:left;color:var(--fg);font:inherit;display:flex;flex-direction:column;gap:4px;min-height:44px}
+.opt[aria-pressed=true]{border-color:var(--accent);background:#2a3b6e}
+.opt strong{font-family:var(--f-head);font-size:16px}
+.badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600}
+.badge.good{background:rgba(95,211,154,.15);color:var(--good)}
+.badge.bad{background:rgba(255,133,133,.15);color:var(--bad)}
+.badge.warn{background:rgba(242,184,75,.15);color:var(--warn)}
+details{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600}
+details ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.list li{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.news{border-left:3px solid var(--warn);background:rgba(242,184,75,.08);padding:10px 12px;border-radius:0 8px 8px 0}
+.alloc{display:flex;flex-direction:column;gap:8px}
+.ar{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.ar .ic{font-size:24px;text-align:center}
+.ar .nm{font-weight:600}
+.bar{height:6px;border-radius:3px;background:var(--bg);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.ctl{display:flex;align-items:center;gap:6px}
+.ctl button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:600 20px var(--f-body);cursor:pointer}
+.ctl button:focus-visible{outline:2px solid var(--warn)}
+.ctl output{min-width:34px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+.left{font-weight:600;text-align:center;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.ind{display:flex;flex-direction:column;gap:10px}
+.ind div.k{display:flex;justify-content:space-between;font-size:14px}
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bg)}
+svg{width:100%;height:auto;display:block}
+svg .ax{fill:var(--muted);font:17px var(--f-body)}
+svg .gl{stroke:var(--line);stroke-width:1}
+.foot{font-size:12px;color:var(--muted);text-align:center}
+@media (max-width:420px){.stats{margin-left:0;width:100%}.steps div{font-size:11px}}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .25s ease-out}@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style>
+
+<style id="platform-integration">.platform-back{position:sticky;top:8px;z-index:50;max-width:720px;margin:0 auto 12px}.platform-back a{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:10px;background:#eaf2fb;color:#173b5b;border:1px solid #c8d8e8;text-decoration:none;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 3px 12px rgba(10,30,55,.12)}.academic-guide{max-width:720px;margin:0 auto 16px;background:#16264b;border:1px solid #2c4278;border-radius:14px;padding:16px;color:#eaf0ff}.academic-guide h2{font:700 18px 'Space Grotesk',system-ui;margin:0 0 8px}.academic-guide p,.academic-guide li{font:13px/1.6 Inter,system-ui;color:#c8d6f4}.academic-guide ul{padding-left:20px;margin:8px 0}.academic-guide details{margin-top:10px}@media(max-width:420px){.academic-guide{padding:13px}}</style><div class="platform-back"><a href="./index.html#interactiveGames" aria-label="Kembali ke dashboard Davy Analytics">← Kembali ke Davy Analytics AI Agent</a></div>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">CL</div>
+    <div><h1>Criminology Lab</h1><small>Simulasi kebijakan · prototipe</small></div>
+    <div class="stats" id="stats" hidden>
+      <span class="pill">Tahun <b id="sYear">1/5</b></span>
+      <span class="pill">Skor <b id="sScore">0</b></span>
+    </div>
+  </header>
+
+  <section id="intro" class="card">
+    <h2>Anda penentu anggaran sistem peradilan pidana</h2>
+    <p>Selama lima tahun Anda membagi 100 poin anggaran ke empat lembaga: Polisi, Jaksa, Hakim, dan Pemasyarakatan. Tujuannya menurunkan tingkat kejahatan tanpa membuat lembaga pemasyarakatan penuh sesak. Anggaran awal mengikuti kondisi tahun berjalan: Polisi 50, Jaksa 5, Hakim 5, Pemasyarakatan 40.</p>
+    <div class="label">Pilih kondisi awal</div>
+    <div class="choice scen" id="scen">
+      <button class="opt" data-act="scen" data-v="Rendah" aria-pressed="false"><strong>Rendah</strong><span class="small muted">200 kejadian per 100 ribu penduduk</span></button>
+      <button class="opt" data-act="scen" data-v="Menengah" aria-pressed="true"><strong>Menengah</strong><span class="small muted">400 kejadian per 100 ribu penduduk</span></button>
+      <button class="opt" data-act="scen" data-v="Tinggi" aria-pressed="false"><strong>Tinggi</strong><span class="small muted">700 kejadian per 100 ribu penduduk</span></button>
+    </div>
+    <details>
+      <summary>Cara membaca model</summary>
+      <ul>
+        <li><b>Kepastian ditangkap</b> naik dengan anggaran Polisi. <b>Kepastian dihukum</b> naik dengan anggaran Jaksa. <b>Kecepatan putusan</b> naik dengan anggaran Hakim.</li>
+        <li>Efek jera = kepastian ditangkap × kepastian dihukum × kecepatan putusan. Literatur deterrence umumnya menemukan bahwa kepastian dihukum lebih berpengaruh daripada beratnya hukuman, sehingga model ini tidak memakai tingkat keparahan sebagai tuas.</li>
+        <li>Pemasyarakatan menurunkan residivisme lewat pembinaan. Jika jumlah narapidana melebihi kapasitas, residivisme justru naik.</li>
+        <li>Tiap tahun ada berita yang menggeser tekanan kejahatan dasar, ditambah guncangan acak sekitar ±4%.</li>
+        <li>Skor akhir = persentase penurunan kejahatan dari kondisi awal + 5 poin untuk tiap prediksi benar. Semua parameter ilustratif, bukan estimasi empiris.</li>
+      </ul>
+    </details>
+    <button class="btn primary" id="start">Mulai simulasi</button>
+    <p class="small muted" id="best"></p>
+  </section>
+
+  <section class="academic-guide" aria-label="Panduan akademik Criminology Lab"><h2>Panduan Akademik &amp; Diskusi</h2><p><b>Capaian pembelajaran:</b> mahasiswa mampu membaca sistem peradilan pidana sebagai rantai kelembagaan, menilai trade-off alokasi anggaran, serta membedakan pencegahan, penegakan, dan pembinaan.</p><details><summary>Kerangka model dan batas interpretasi</summary><ul><li>Polisi berhubungan dengan kepastian penangkapan; Jaksa dengan kepastian perkara berujung hukuman; Hakim dengan kecepatan putusan; Pemasyarakatan dengan pembinaan dan kapasitas hunian.</li><li>Efek jera dimodelkan sebagai perkalian kepastian ditangkap, kepastian dihukum, dan kecepatan putusan. Kelemahan satu mata rantai membatasi kinerja keseluruhan.</li><li>Model membedakan pelaku baru dan residivis serta memasukkan tekanan eksternal dan guncangan acak tahunan.</li><li>Seluruh angka, fungsi respons, skenario, dan bobot merupakan parameter ilustratif; bukan proyeksi kejahatan, estimasi kausal, atau rekomendasi anggaran aktual.</li><li>Efek kebijakan nyata dipengaruhi konteks lokal, jenis kejahatan, kualitas data, hak asasi manusia, pencegahan sosial, dan kapasitas lembaga.</li></ul></details><details><summary>Pertanyaan diskusi kelas</summary><ul><li>Mengapa peningkatan penangkapan tanpa kapasitas pemasyarakatan dapat menghasilkan konsekuensi yang tidak diinginkan?</li><li>Bagaimana menguji efektivitas alokasi anggaran menggunakan data administratif?</li><li>Indikator apa yang perlu ditambahkan agar keberhasilan tidak hanya diukur dari penurunan jumlah kejahatan?</li><li>Bagaimana membedakan korelasi, mekanisme kontribusi, dan dampak kausal kebijakan?</li></ul></details></section>
+<section id="game" hidden>
+    <div class="steps" id="steps" aria-label="Tahap"></div>
+    <div id="stage" style="margin-top:16px"></div>
+  </section>
+
+  <p class="foot">Prototipe pembelajaran. Parameter ilustratif, bukan estimasi empiris.</p>
+</div>
+
+<script>
+/*MODEL*/
+const BASE={Rendah:200,Menengah:400,Tinggi:700};
+const YEARS=5,BONUS=5;
+const REF={P:50,J:5,H:5,C:40};
+function ind4(al){
+  const a=0.10+0.60*al.P/(al.P+25),v=0.30+0.60*al.J/(al.J+25),s=0.40+0.60*al.H/(al.H+25);
+  return {a:a,v:v,s:s,Pr:a*v,D:a*v*s};
+}
+function recBase(C){return 0.75-0.45*C/(C+25)}
+const R0=ind4(REF),REC0=recBase(REF.C);
+function calcYear(al,prev,B0,mult,noise){
+  const x=ind4(al),C=al.C;
+  const Bt=(0.7*B0+0.3*prev)*mult;
+  const loadIdx=(x.Pr*prev)/(R0.Pr*B0),capIdx=Math.max(0.3,(C+10)/(REF.C+10));
+  const over=Math.min(1.2,Math.max(0,loadIdx/capIdx-1));
+  const rec=recBase(C)*(1+0.3*over);
+  const fF=Math.max(0.2,(1-3*x.D)/(1-3*R0.D));
+  const F=Bt*0.6*fF*noise,R=Bt*0.4*(rec/REC0)*noise;
+  let crime=F+R;if(crime>2*B0){const k=2*B0/crime;crime*=k}
+  return {crime:crime,F:F,R:R,a:x.a,v:x.v,s:x.s,Pr:x.Pr,D:x.D,over:over,load:loadIdx,cap:capIdx,rec:rec};
+}
+/*ENDMODEL*/
+
+const ORG=[{k:'P',n:'Polisi',e:'🚓',d:'Menangkap pelaku'},{k:'J',n:'Jaksa',e:'📜',d:'Menuntut sampai putusan'},{k:'H',n:'Hakim',e:'⚖️',d:'Memutus dengan cepat'},{k:'C',n:'Pemasyarakatan',e:'🏛️',d:'Membina dan menampung'}];
+const EVENTS=[
+  {t:'Tahun biasa',m:1,d:'Tidak ada guncangan besar. Tekanan kejahatan dasar tetap.',w:4},
+  {t:'Krisis ekonomi regional',m:1.15,d:'Pengangguran naik. Tekanan kejahatan dasar naik 15%.',w:2},
+  {t:'Program padat karya desa',m:0.9,d:'Lapangan kerja musiman menurunkan tekanan kejahatan dasar 10%.',w:2},
+  {t:'Peredaran narkoba meningkat',m:1.1,d:'Kasus baru bertambah. Tekanan kejahatan dasar naik 10%.',w:2}
+];
+const $=s=>document.querySelector(s);
+const STAGES=['Berita','Anggaran','Prediksi','Hasil'];
+let S=null,scen='Menengah';
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const f0=x=>Math.round(x).toString();
+const pc=x=>Math.round(x*100)+'%';
+
+function pickEvent(){let t=EVENTS.reduce((s,e)=>s+e.w,0)*Math.random();for(const e of EVENTS){t-=e.w;if(t<=0)return e}return EVENTS[0]}
+function showBest(){const b=lsGet('cl_best');$('#best').textContent=b?('Skor terbaik di perangkat ini: '+b):''}
+
+function newGame(){
+  const B0=BASE[scen];
+  S={scen,B0,year:1,prev:B0,alloc:{P:REF.P,J:REF.J,H:REF.H,C:REF.C},stage:0,score:0,correct:0,hist:[{y:0,c:B0}],ev:pickEvent(),pred:null,res:null,log:[]};
+  $('#intro').hidden=true;$('#game').hidden=false;$('#stats').hidden=false;render();
+}
+
+function head(){$('#sYear').textContent=S.year+'/'+YEARS;$('#sScore').textContent=f0(S.score)}
+function steps(){$('#steps').innerHTML=STAGES.map((s,i)=>'<div class="'+(i===S.stage?'on':i<S.stage?'done':'')+'">'+(i+1)+'. '+s+'</div>').join('')}
+const sum=a=>a.P+a.J+a.H+a.C;
+
+function render(){
+  head();steps();const st=$('#stage');
+  if(S.stage===0){
+    st.innerHTML='<div class="card"><h2>Tahun '+S.year+': kondisi daerah</h2>'
+    +'<div class="split"><div class="box"><b>'+f0(S.prev)+'</b><span>Kejahatan per 100 ribu, tahun lalu</span></div><div class="box"><b>'+f0(S.B0)+'</b><span>Kondisi awal (skenario '+S.scen+')</span></div></div>'
+    +'<div class="news"><b>'+S.ev.t+'</b><div class="small muted">'+S.ev.d+'</div></div>'
+    +'<button class="btn primary" data-act="to1">Lanjut: atur anggaran</button></div>';
+  }else if(S.stage===1){
+    st.innerHTML='<div class="card"><h2>Bagi 100 poin anggaran</h2><div class="alloc" id="alloc"></div><div class="left" id="left"></div>'
+    +'<button class="btn primary" id="lock" data-act="to2">Kunci anggaran</button></div>';
+    drawAlloc();
+  }else if(S.stage===2){
+    st.innerHTML='<div class="card"><h2>Prediksi tahun ke-'+S.year+'</h2><p class="muted">Dibanding tahun lalu ('+f0(S.prev)+' per 100 ribu), apakah tingkat kejahatan akan turun atau naik? Prediksi dikunci sebelum hasil dibuka.</p>'
+    +'<div class="choice"><button class="opt" data-act="pred" data-v="down" aria-pressed="'+(S.pred==='down')+'"><strong>Turun</strong><span class="small muted">Lebih rendah dari tahun lalu</span></button>'
+    +'<button class="opt" data-act="pred" data-v="up" aria-pressed="'+(S.pred==='up')+'"><strong>Naik</strong><span class="small muted">Lebih tinggi dari tahun lalu</span></button></div>'
+    +'<button class="btn primary" data-act="run" '+(S.pred?'':'disabled')+'>Kunci prediksi dan jalankan</button></div>';
+  }else{resultView(st)}
+}
+
+function drawAlloc(){
+  const a=S.alloc,left=100-sum(a);
+  $('#alloc').innerHTML=ORG.map(o=>'<div class="ar"><div class="ic" aria-hidden="true">'+o.e+'</div><div><div class="nm">'+o.n+'</div><div class="small muted">'+o.d+'</div><div class="bar"><i style="width:'+a[o.k]+'%"></i></div></div>'
+    +'<div class="ctl"><button data-act="adj" data-k="'+o.k+'" data-d="-5" aria-label="Kurangi '+o.n+'">−</button><output aria-label="'+o.n+'">'+a[o.k]+'</output><button data-act="adj" data-k="'+o.k+'" data-d="5" aria-label="Tambah '+o.n+'">+</button></div></div>').join('');
+  $('#left').textContent=left===0?'Anggaran terpakai penuh (100 poin)':(left>0?'Sisa '+left+' poin harus dibagi':'Lebih '+(-left)+' poin, kurangi dulu');
+  $('#left').style.color=left===0?'var(--good)':'var(--warn)';
+  $('#lock').disabled=left!==0;
+}
+
+function advice(r){
+  if(r.over>0.1)return 'Lembaga pemasyarakatan kelebihan beban ('+pc(r.load/r.cap)+' dari kapasitas). Residivisme naik karena narapidana tidak terbina. Tambahkan anggaran Pemasyarakatan atau kurangi beban di hulu.';
+  if(r.a<0.4)return 'Kepastian ditangkap masih rendah ('+pc(r.a)+'). Menambah anggaran Polisi memberi dampak paling besar pada efek jera.';
+  if(r.v<0.55)return 'Banyak perkara tidak berujung hukuman (kepastian dihukum '+pc(r.v)+'). Jaksa menjadi hambatan efek jera.';
+  if(r.s<0.65)return 'Putusan masih lambat (kecepatan '+pc(r.s)+'). Hakim menjadi hambatan efek jera.';
+  return 'Alokasi relatif seimbang. Tiap tambahan poin ke satu lembaga kini memberi hasil yang makin kecil.';
+}
+
+function resultView(st){
+  const r=S.res,d=r.crime-S.prev,pct=Math.round(d/S.prev*100);
+  const tot=r.F+r.R,wf=Math.round(r.F/tot*100);
+  const ok=r.ok;
+  st.innerHTML='<div class="card"><h2>Hasil tahun '+S.year+'</h2>'
+  +'<div class="split"><div class="box"><b>'+f0(r.crime)+'</b><span>Kejahatan per 100 ribu</span></div><div class="box"><b style="color:var(--'+(d<=0?'good':'bad')+')">'+(d>0?'+':'−')+Math.abs(pct)+'%</b><span>Dibanding tahun lalu</span></div></div>'
+  +'<div><span class="badge '+(ok?'good':'bad')+'">Prediksi '+(ok?'benar (+5)':'meleset')+'</span> <span class="badge warn">'+S.ev.t+'</span></div>'
+  +'<div class="label">Asal kejahatan</div><div class="stack" role="img" aria-label="Kejahatan baru '+wf+' persen, residivis '+(100-wf)+' persen"><i style="width:'+wf+'%;background:var(--accent)"></i><i style="width:'+(100-wf)+'%;background:var(--warn)"></i></div>'
+  +'<div class="row small"><span><span style="color:var(--accent)">■</span> Pelaku baru '+f0(r.F)+' ('+wf+'%)</span><span><span style="color:var(--warn)">■</span> Residivis '+f0(r.R)+' ('+(100-wf)+'%)</span></div>'
+  +'<div class="label">Indikator sistem</div><div class="ind">'+ind('Kepastian ditangkap',r.a)+ind('Kepastian dihukum',r.v)+ind('Kecepatan putusan',r.s)+ind('Beban lapas terhadap kapasitas',Math.min(1.5,r.load/r.cap),r.load/r.cap>1)+'</div>'
+  +'<p class="small muted">Efek jera tahun ini: '+pc(r.D)+' (kepastian ditangkap × dihukum × kecepatan).</p>'
+  +'<div class="news"><b>Catatan kebijakan</b><div class="small muted">'+advice(r)+'</div></div>'
+  +'<div class="label">Tren kejahatan</div>'+chart()
+  +'<button class="btn primary" data-act="next">'+(S.year>=YEARS?'Lihat ringkasan':'Tahun berikutnya')+'</button></div>';
+}
+function ind(name,v,bad){
+  const w=Math.round(Math.min(1.5,v)/1.5*100);
+  return '<div><div class="k"><span>'+name+'</span><b>'+pc(v)+'</b></div><div class="bar"><i style="width:'+w+'%;background:var(--'+(bad?'bad':'accent')+')"></i></div></div>';
+}
+
+function chart(){
+  const h=S.hist,X0=44,X1=616,Y0=190,Y1=16,max=Math.max(S.B0*1.15,...h.map(p=>p.c)),min=0;
+  const X=i=>X0+i/YEARS*(X1-X0),Y=v=>Y0-(v-min)/(max-min)*(Y0-Y1);
+  let g='';const ticks=[0,.5,1].map(t=>Math.round(max*t/10)*10);
+  ticks.forEach(v=>{g+='<line class="gl" x1="'+X0+'" x2="'+X1+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="ax" x="'+(X0-6)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>'});
+  for(let i=0;i<=YEARS;i++)g+='<text class="ax" x="'+X(i)+'" y="'+(Y0+16)+'" text-anchor="middle">'+(i===0?'awal':'T'+i)+'</text>';
+  const path=h.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.c).toFixed(1)).join(' ');
+  const last=h[h.length-1];
+  return '<svg viewBox="0 0 640 214" role="img" aria-label="Tingkat kejahatan per tahun dibanding kondisi awal">'+g
+  +'<line x1="'+X0+'" x2="'+X1+'" y1="'+Y(S.B0)+'" y2="'+Y(S.B0)+'" stroke="var(--warn)" stroke-dasharray="4 4"/><text class="ax" x="'+(X1)+'" y="'+(Y(S.B0)-6)+'" text-anchor="end" style="fill:var(--warn)">kondisi awal</text>'
+  +'<path d="'+path+'" fill="none" stroke="var(--accent)" stroke-width="2.5"/>'
+  +h.map((p,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.c).toFixed(1)+'" r="'+(i===h.length-1?5:3.5)+'" fill="var(--accent)"/>').join('')
+  +'<text class="ax" x="'+X(h.length-1)+'" y="'+(Y(last.c)-10)+'" text-anchor="'+(h.length-1>=YEARS?'end':'middle')+'">'+f0(last.c)+'</text></svg>';
+}
+
+function run(){
+  const mult=S.ev.m,noise=1+(Math.random()-.5)*0.08;
+  const r=calcYear(S.alloc,S.prev,S.B0,mult,noise);
+  const down=r.crime<S.prev,ok=(S.pred==='down')===down;r.ok=ok;
+  S.res=r;if(ok){S.correct++;S.score+=BONUS}
+  S.hist.push({y:S.year,c:r.crime});S.log.push({y:S.year,c:r.crime,ok:ok,ev:S.ev.t});S.stage=3;render();
+}
+
+function endView(){
+  head();$('#steps').innerHTML='';
+  const last=S.hist[S.hist.length-1].c,red=Math.round((1-last/S.B0)*100),total=red+S.correct*BONUS;
+  S.score=total;head();
+  const best=Number(lsGet('cl_best')||'-9999');if(total>best)lsSet('cl_best',String(total));
+  const lvl=total>=35?'Reformis ulung':total>=22?'Pengelola handal':total>=10?'Perlu penajaman':'Perlu kaji ulang';
+  $('#stage').innerHTML='<div class="card"><h2>Ringkasan simulasi</h2>'
+  +'<div class="split"><div class="box"><b>'+total+'</b><span>Skor akhir · '+lvl+'</span></div><div class="box"><b>'+(red>=0?'−':'+')+Math.abs(red)+'%</b><span>Kejahatan dari kondisi awal</span></div></div>'
+  +chart()
+  +'<p class="muted small">Prediksi benar '+S.correct+' dari '+YEARS+' tahun. Awal '+f0(S.B0)+', akhir '+f0(last)+' per 100 ribu penduduk.</p>'
+  +'<div class="news"><b>Pelajaran inti.</b><div class="small muted">Efek jera adalah hasil perkalian beberapa mata rantai. Satu lembaga yang tertinggal menahan seluruh rantai, dan penegakan yang agresif tanpa kapasitas pemasyarakatan dapat menambah residivis.</div></div>'
+  +'<div class="row"><button class="btn" type="button" data-act="export">Ekspor hasil (JSON)</button><button class="btn primary" data-act="again">Main lagi</button></div></div>';
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='scen'){scen=b.dataset.v;document.querySelectorAll('#scen .opt').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))}
+  else if(a==='to1'){S.stage=1;render()}
+  else if(a==='adj'){const k=b.dataset.k,d=Number(b.dataset.d);S.alloc[k]=Math.max(0,Math.min(100,S.alloc[k]+d));drawAlloc();const nb=document.querySelector('[data-act="adj"][data-k="'+k+'"][data-d="'+d+'"]');if(nb)nb.focus()}
+  else if(a==='to2'){S.stage=2;S.pred=null;render()}
+  else if(a==='pred'){S.pred=b.dataset.v;render()}
+  else if(a==='run'){run()}
+  else if(a==='next'){if(S.year>=YEARS){S.stage=4;endView()}else{S.year++;S.prev=S.res.crime;S.ev=pickEvent();S.pred=null;S.res=null;S.stage=0;render()}}
+  else if(a==='export'){exportCrimeResults()}
+  else if(a==='again'){newGame()}
+});
+function exportCrimeResults(){if(!S||!S.log.length)return;const payload={game:'Criminology Lab',exportedAt:new Date().toISOString(),scenario:S.scen,initialCrime:S.B0,finalCrime:S.hist[S.hist.length-1].c,score:S.score,correctPredictions:S.correct,history:S.log};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hasil-criminology-lab.json';a.click();URL.revokeObjectURL(url);}
+$('#start').addEventListener('click',newGame);
+showBest();
+</script>
+
+</body></html>
