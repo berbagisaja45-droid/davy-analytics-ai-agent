@@ -794,7 +794,7 @@ function mudOppEffort(share){
 }
 function mudBankEV(share,effort){
  const n=share/100,p=effort==='high'?.8:.4;
- return p*n*40-(1-p)*25;
+ return p*n*40-(1-p)*35;
 }
 function mudSolveBNE(q){
  let best={share:10,ev:-Infinity};
@@ -808,7 +808,7 @@ function playMudharabah(){
  const role=document.getElementById('mudRole').value,share=Number(document.getElementById('mudShare').value),capital=Number(document.getElementById('mudCapital').value),prior=Number(document.getElementById('mudPrior').value),accuracy=Number(document.getElementById('mudAccuracy').value),signals=Number(document.getElementById('mudSignals').value),prediction=document.getElementById('mudPrediction').value,box=document.getElementById('mudResult');
  if(share<10||share>90||capital<=0||prior<10||prior>90||accuracy<55||accuracy>95){box.innerHTML='<b>Parameter tidak valid.</b> Periksa nisbah, modal, prior, dan akurasi sinyal.';return}
  if(mudGameState.history.some(x=>x.round===mudGameState.round)){box.innerHTML='<b>Ronde ini sudah dinilai.</b> Tekan Ronde berikutnya.';return}
- const q=mudPosterior(prior,accuracy,signals),bne=mudSolveBNE(q),type=Math.random()<(prior/100)?'trust':'opportunist',effort=type==='trust'?'high':mudOppEffort(share),success=Math.random()<(effort==='high'?.8:.4),gross=success?.40*capital:-.35*capital;
+ const q=mudPosterior(prior,accuracy,signals),bne=mudSolveBNE(q),type=Math.random()<(prior/100)?'trust':'opportunist',effort=type==='trust'?'high':mudOppEffort(share),success=Math.random()<(effort==='high'?.8:.4),gross=success ? 0.40*capital : -0.35*capital;
  const bankGain=success?gross*share/100:gross,customerGain=success?gross*(100-share)/100:0,roi=bankGain/capital*100,correct=prediction===effort;
  mudGameState.score+=roi+(correct?5:0);mudGameState.profit+=bankGain;
  mudGameState.history.push({round:mudGameState.round,prior,accuracy,signals,posterior:q,share,bne:bne.share,effort,prediction,correct,bankGain,roi,type,success});
@@ -854,7 +854,7 @@ function mudharabahChart(selectedShare,capital,type,effort,outcome){
   if(v<=50)pOppLeft+=(v===10?'M':'L')+X(v).toFixed(1)+' '+Y(opp).toFixed(1)+' ';
   else pOppRight+=(v===51?'M':'L')+X(v).toFixed(1)+' '+Y(opp).toFixed(1)+' ';
  }
- const chosen=outcome==='failure'?-.35*cap:(type==='trust'||effort==='high'?high(selectedShare):low(selectedShare));
+ const chosen=outcome==='failure' ? -0.35*cap : (type==='trust'||effort==='high'?high(selectedShare):low(selectedShare));
  const markerX=X(selectedShare),markerY=Y(chosen),zeroY=Y(0);
  const note='Kurva menghitung expected payoff bank dengan peluang berhasil 80% (high effort) atau 40% (low effort), laba 40% modal saat berhasil, dan kerugian 35% modal saat gagal. Oportunis memilih high effort jika tambahan bagian laba menutup biaya usaha Rp8 juta pada modal acuan Rp100 juta.';
  return '<section class="mud-result-chart" style="margin-top:18px;padding:14px 12px;border:1px solid #344b7c;border-radius:14px;background:#142448;color:#eaf0ff"><div style="font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9b9df;font-size:12px;margin:2px 0 10px">Expected payoff bank menurut nisbah</div><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Grafik expected payoff bank pada perilaku Amanah dan Oportunis" style="display:block;width:100%;height:auto;font-family:Arial,sans-serif">'+grid+'<line x1="'+L+'" x2="'+(W-R)+'" y1="'+zeroY+'" y2="'+zeroY+'" stroke="#8192b8" stroke-width="1.2"/><path d="'+pHigh+'" fill="none" stroke="#5fd39a" stroke-width="3" stroke-linecap="round"/><path d="'+pOppLeft+'" fill="none" stroke="#ff8585" stroke-width="3" stroke-linecap="round"/><path d="'+pOppRight+'" fill="none" stroke="#ff8585" stroke-width="3" stroke-linecap="round"/><line x1="'+X(50)+'" x2="'+X(50)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#7db4ff" stroke-dasharray="5 5"/><text x="'+(X(50)+7)+'" y="'+(T+10)+'" fill="#7db4ff" font-size="11">Batas insentif 50%</text><line x1="'+markerX+'" x2="'+markerX+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#f2b84b" stroke-width="1.5"/><circle cx="'+markerX+'" cy="'+markerY+'" r="6" fill="#f2b84b" stroke="#fff" stroke-width="1.5"/>'+ticks+'<text x="'+((L+W-R)/2)+'" y="'+(H-9)+'" text-anchor="middle" fill="#a9b9df" font-size="12">Nisbah bank</text><text x="'+(L+4)+'" y="16" fill="#a9b9df" font-size="11">Rp juta</text><g font-size="11"><line x1="'+(L+8)+'" x2="'+(L+25)+'" y1="'+(H-31)+'" y2="'+(H-31)+'" stroke="#5fd39a" stroke-width="3"/><text x="'+(L+30)+'" y="'+(H-27)+'" fill="#c8d5f2">Amanah</text><line x1="'+(L+105)+'" x2="'+(L+122)+'" y1="'+(H-31)+'" y2="'+(H-31)+'" stroke="#ff8585" stroke-width="3"/><text x="'+(L+127)+'" y="'+(H-27)+'" fill="#c8d5f2">Oportunis</text><circle cx="'+(L+235)+'" cy="'+(H-31)+'" r="5" fill="#f2b84b"/><text x="'+(L+247)+'" y="'+(H-27)+'" fill="#c8d5f2">Pilihan Anda</text></g></svg><p style="margin:8px 2px 0;color:#a9b9df;font-size:12px;line-height:1.6">'+note+'</p><div style="font-size:12px;color:#f2b84b;margin-top:5px">Nisbah pilihan: '+selectedShare+'% bank · '+(100-selectedShare)+'% nasabah</div></section>';
