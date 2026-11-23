@@ -816,12 +816,12 @@ function playMudharabah(){
  box.innerHTML='<b>Hasil ronde '+mudGameState.round+'</b><br>'+ (role==='bank'?'Peran Anda: Shahibul Maal (Bank).':'Peran Anda: Mudharib (Nasabah).')+
  '<br>Posterior Amanah (Bayes): <b>'+Math.round(q*100)+'%</b>; Oportunis: '+Math.round((1-q)*100)+'%'+
  '<br>Nisbah pilihan bank: '+share+'%; nisbah best response BNE: <b>'+bne.share+'%</b>'+
- '<br>Expected payoff pada pilihan: '+mudFormatRp(mudBankEV(share,'high')*capital/100)+' juta (jika high effort); BNE expected payoff: '+mudFormatRp(bne.ev*capital/100)+' juta'+
+ '<br>Expected payoff pada pilihan: '+mudFormatRp(mudBankEV(share,'high')*capital/100)+' juta (jika high effort); BNE expected payoff: '+mudFormatRp(bne.ev*capital/100)+
  '<br>Perilaku aktual: <b>'+(effort==='high'?'Kerja keras':'Kerja santai')+'</b>; hasil usaha: '+(success?'berhasil':'gagal')+
  '<br>Laba/rugi bank: <b>'+mudFormatRp(bankGain)+'</b>; skor ronde: <b>'+roi.toFixed(1)+' + '+(correct?5:0)+' = '+(roi+(correct?5:0)).toFixed(1)+' poin</b>'+
  '<br>Prediksi Anda: '+(correct?'benar (+5)':'belum tepat')+'. '+note+
  '<div style="margin-top:10px;padding:10px;border:1px solid #344b7c;border-radius:10px">Prior '+prior+'% → posterior '+Math.round(q*100)+'% · sinyal positif '+signals+'/2 · akurasi '+accuracy+'%.<br><b>Interpretasi:</b> '+(Math.abs(share-bne.share)<=2.5?'Nisbah pilihan sesuai best response bank pada grid 5%.':'Nisbah pilihan berbeda dari best response bank.')+'</div>';
- box.insertAdjacentHTML('beforeend',mudharabahChart(share,capital,'trust',effort,success?'success':'failure'));
+ box.insertAdjacentHTML('beforeend',mudharabahChart(share,capital,type,effort,success?'success':'failure'));
  box.insertAdjacentHTML('beforeend','<div style="margin-top:14px;padding:14px;border:1px solid #344b7c;border-radius:12px"><b>Akumulasi sementara</b><br>Skor total: <b>'+mudGameState.score.toFixed(1)+' poin</b><br>Total laba/rugi bank: <b>'+mudFormatRp(mudGameState.profit)+'</b><br>Ronde: '+mudGameState.history.length+'/5<button class="btn primary" type="button" style="width:100%;margin-top:12px" onclick="nextMudharabahRound()">'+(mudGameState.round>=5?'Lihat ringkasan akhir':'Ronde berikutnya')+'</button></div>');
  document.getElementById('mudRound').textContent='Ronde '+mudGameState.round+' selesai';
  document.getElementById('mudLearning').textContent='Skor = ROI bank + 5 poin jika prediksi perilaku benar. Tipe nasabah dan hasil usaha baru dibuka setelah keputusan.';
