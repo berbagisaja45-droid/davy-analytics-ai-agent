@@ -230,7 +230,8 @@ function advice(r){
 }
 function jointPanel(r){
  const b=bottleneck(r);
- return '<div class="news"><b>Peluang gabungan efek jera: '+pc(r.D)+'</b><div class="ind">'+ind('Tertangkap · Polisi',r.a)+ind('Dihukum · Jaksa',r.v)+ind('Tepat waktu · Hakim',r.s)+'</div><p class="small muted">Hambatan sistem: <b>'+b.name+'</b>. '+b.reason+'</p></div>';
+ const row=(label,v)=>'<div style="margin:10px 0"><div class="k"><span>'+label+'</span><b>'+pc(v)+'</b></div><div class="bar"><i style="width:'+Math.round(v*100)+'%;background:var(--accent)"></i></div></div>';
+ return '<div class="news"><b>Peluang gabungan efek jera: '+pc(r.D)+'</b>'+row('Peluang tertangkap · Polisi',r.a)+row('Peluang dihukum · Jaksa',r.v)+row('Peluang putusan tepat waktu · Hakim',r.s)+'<p class="small muted">Hambatan sistem: <b>'+b.name+'</b>. '+b.reason+'</p></div>';
 }
 
 function resultView(st){
