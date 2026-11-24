@@ -431,7 +431,7 @@ showBest();
  async function complete(){
   if(!user||!sessionId||saving)return;
   saving=true;
-  const state=window.S;
+  const state=S;
   const rounds=(state.log||[]);
   const score=Number(state.score)||0;
   const rows=rounds.map((r,i)=>({session_id:sessionId,round_number:i+1,round_type:'criminal_policy',response_data:r,score:Number(r.score)||null}));
@@ -448,7 +448,7 @@ showBest();
   if(t)setTimeout(begin,0);
   const act=e.target.closest('[data-act]');
   if(act&&act.dataset.act==='next')setTimeout(()=>{
-   const state=window.S;
+   const state=S;
    if(state&&state.stage===4)complete();
   },0);
   if(act&&act.dataset.act==='again')setTimeout(()=>{sessionId=null;started=false;begin()},0);
