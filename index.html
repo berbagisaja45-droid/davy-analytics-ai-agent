@@ -1138,11 +1138,12 @@ updateCrimeBudgetUI();
 #orderAdminDashboard .admin-orders-table .btn{padding:7px 10px;font-size:11px}
 @media(max-width:700px){#orderAdminDashboard .admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#orderAdminDashboard .head h3{font-size:20px}}
 
-/* HARD SCREEN ROUTER: exactly one top-level content screen at a time */
-main.app > section{display:none!important}
+/* FINAL VISIBILITY GUARD: override legacy feature-specific display rules */
+main.app > section:not(.screen-current){display:none!important}
 main.app > section.screen-current{display:block!important}
-main.app > section.screen-current.creator-card{display:flex!important}
+main.app > section.screen-current#creatorProfile{display:flex!important}
 main.app > section.screen-current#home{display:block!important}
+main.app > section.screen-current#globalAccount{display:block!important}
 </style>
 <script id="admin-orders-script">
 (function(){
