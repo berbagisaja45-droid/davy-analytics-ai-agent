@@ -845,18 +845,40 @@ el('researchClear').addEventListener('click',()=>{
 updateAgentProfile('research');
 renderConversation('research');
 
-// One feature per screen; navigation switches visibility without long scrolling.
+// Single authoritative screen router. No duplicate handlers or stale inline visibility.
 (function(){
- const nav=document.querySelector('.main-nav'); if(!nav)return;
- const links=[...nav.querySelectorAll('a')];
+ const nav=document.querySelector('.main-nav');if(!nav)return;
+ const links=[...nav.querySelectorAll('a[href^="#"]')];
  const screens={home:['home'],globalAccount:['globalAccount'],orderAdminDashboard:['orderAdminDashboard'],dashboardHub:['dashboardHub'],interactiveGames:['interactiveGames'],creatorProfile:['creatorProfile'],agents:['agents'],catalog:['catalog','orderSection'], 'materi-lengkap':['materi-lengkap']};
- function activate(id){window.activateScreen=activate;document.body.classList.add('screen-mode');document.body.classList.toggle('screen-creator',id==='creatorProfile');document.body.classList.toggle('screen-home',id==='home');const hero=document.getElementById('home');const creator=document.getElementById('creatorProfile');const account=document.getElementById('globalAccount');if(account)account.style.setProperty('display',id==='globalAccount'?'block':'none','important');if(hero)hero.style.setProperty('display',id==='home'?'block':'none','important');if(creator)creator.style.setProperty('display',id==='creatorProfile'?'flex':'none','important');for(const s of document.querySelectorAll('.app>section')){s.classList.remove('screen-active');s.style.setProperty('display','none','important');}const ids=screens[id]||['dashboardHub'];ids.forEach(x=>{const el=document.getElementById(x);if(el){el.classList.add('screen-active');el.style.setProperty('display','block','important');}});if(id==='creatorProfile'&&creator)creator.style.setProperty('display','flex','important');links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:'instant'});}
- links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();activate(a.getAttribute('href').slice(1));}));
- const currentHash=location.hash;
- // Do not overwrite Supabase recovery tokens in the URL fragment before
- // the recovery handler below has exchanged them for an authenticated session.
- const isSupabaseRecovery=currentHash.includes('access_token=') || currentHash.includes('type=recovery') || currentHash.includes('error_description=');
- if(!isSupabaseRecovery){const initial=currentHash.slice(1);activate(screens[initial]?initial:'home');}
+ function activate(id,writeHash=true){
+  if(!screens[id])id='home';
+  const sections=[...document.querySelectorAll('main.app>section')];
+  sections.forEach(s=>{
+   s.classList.remove('screen-active','screen-current');
+   s.style.removeProperty('display');
+   s.hidden=true;
+  });
+  screens[id].forEach(sectionId=>{
+   const el=document.getElementById(sectionId);
+   if(el){el.hidden=false;el.classList.add('screen-active','screen-current');el.style.setProperty('display',sectionId==='creatorProfile'?'flex':'block','important');}
+  });
+  document.body.classList.add('screen-mode');
+  document.body.classList.toggle('screen-creator',id==='creatorProfile');
+  document.body.classList.toggle('screen-home',id==='home');
+  links.forEach(a=>{
+   const active=a.getAttribute('href')==='#'+id;
+   a.classList.toggle('active',active);
+   if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+  });
+  if(writeHash)history.pushState({screen:id},'', '#'+id);
+  window.scrollTo({top:0,behavior:'instant'});
+ }
+ links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();activate(a.getAttribute('href').slice(1));}));
+ window.addEventListener('popstate',()=>activate(location.hash.slice(1)||'home',false));
+ window.activateScreen=(id)=>activate(id,true);
+ const hash=location.hash;
+ const recovery=hash.includes('access_token=')||hash.includes('type=recovery')||hash.includes('error_description=');
+ activate(recovery?'home':(screens[hash.slice(1)]?hash.slice(1):'home'),false);
 })();
 
 let mudGameState={round:1,totalRounds:5,score:0,profit:0,history:[]};
@@ -1153,12 +1175,7 @@ updateCrimeBudgetUI();
 #orderAdminDashboard .admin-orders-table .btn{padding:7px 10px;font-size:11px}
 @media(max-width:700px){#orderAdminDashboard .admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#orderAdminDashboard .head h3{font-size:20px}}
 
-/* FINAL VISIBILITY GUARD: override legacy feature-specific display rules */
-main.app > section:not(.screen-current){display:none!important}
-main.app > section.screen-current{display:block!important}
-main.app > section.screen-current#creatorProfile{display:flex!important}
-main.app > section.screen-current#home{display:block!important}
-main.app > section.screen-current#globalAccount{display:block!important}
+/* Visibility is controlled by the single screen router; avoid legacy CSS overriding it. */
 
 /* Global launch visual + compact account screen */
 .global-launch{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(150px, .7fr) minmax(0,2fr);align-items:center;gap:clamp(18px,4vw,54px);margin:0 0 26px;padding:clamp(24px,4vw,52px);min-height:300px;border-radius:24px;background:radial-gradient(ellipse at 18% 15%,rgba(49,198,215,.30),transparent 34%),radial-gradient(ellipse at 90% 90%,rgba(117,91,229,.32),transparent 38%),linear-gradient(125deg,#071b33 0%,#103a5b 48%,#172a55 100%);color:#fff;box-shadow:0 20px 55px rgba(10,30,65,.22)}
