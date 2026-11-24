@@ -845,37 +845,41 @@ el('researchClear').addEventListener('click',()=>{
 updateAgentProfile('research');
 renderConversation('research');
 
-// Single authoritative screen router. No duplicate handlers or stale inline visibility.
+// Single authoritative screen router: inline important visibility wins over legacy feature CSS.
 (function(){
- const nav=document.querySelector('.main-nav');if(!nav)return;
+ const nav=document.querySelector('main.app > .main-nav');if(!nav)return;
  const links=[...nav.querySelectorAll('a[href^="#"]')];
- const screens={home:['home'],globalAccount:['globalAccount'],orderAdminDashboard:['orderAdminDashboard'],dashboardHub:['dashboardHub'],interactiveGames:['interactiveGames'],creatorProfile:['creatorProfile'],agents:['agents'],catalog:['catalog','orderSection'], 'materi-lengkap':['materi-lengkap']};
+ const screens={home:['home'],globalAccount:['globalAccount'],orderAdminDashboard:['orderAdminDashboard'],dashboardHub:['dashboardHub'],interactiveGames:['interactiveGames'],creatorProfile:['creatorProfile'],agents:['agents'],catalog:['catalog','orderSection'],'materi-lengkap':['materi-lengkap']};
+ const sections=[...document.querySelectorAll('main.app > section')];
  function activate(id,writeHash=true){
   if(!screens[id])id='home';
-  const sections=[...document.querySelectorAll('main.app>section')];
-  sections.forEach(s=>{
-   s.classList.remove('screen-active','screen-current');
-   s.style.removeProperty('display');
-   s.hidden=true;
+  sections.forEach(section=>{
+   section.classList.remove('screen-active','screen-current');
+   section.style.setProperty('display','none','important');
   });
   screens[id].forEach(sectionId=>{
-   const el=document.getElementById(sectionId);
-   if(el){el.hidden=false;el.classList.add('screen-active','screen-current');el.style.setProperty('display',sectionId==='creatorProfile'?'flex':'block','important');}
+   const section=document.getElementById(sectionId);
+   if(!section)return;
+   section.classList.add('screen-active','screen-current');
+   section.style.setProperty('display',sectionId==='creatorProfile'?'flex':'block','important');
   });
   document.body.classList.add('screen-mode');
-  document.body.classList.toggle('screen-creator',id==='creatorProfile');
   document.body.classList.toggle('screen-home',id==='home');
-  links.forEach(a=>{
-   const active=a.getAttribute('href')==='#'+id;
-   a.classList.toggle('active',active);
-   if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+  document.body.classList.toggle('screen-creator',id==='creatorProfile');
+  links.forEach(link=>{
+   const active=link.getAttribute('href')==='#'+id;
+   link.classList.toggle('active',active);
+   if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
   });
   if(writeHash)history.pushState({screen:id},'', '#'+id);
-  window.scrollTo({top:0,behavior:'instant'});
+  window.scrollTo(0,0);
  }
- links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();activate(a.getAttribute('href').slice(1));}));
+ links.forEach(link=>link.addEventListener('click',event=>{
+  event.preventDefault();event.stopImmediatePropagation();
+  activate(link.getAttribute('href').slice(1),true);
+ }));
  window.addEventListener('popstate',()=>activate(location.hash.slice(1)||'home',false));
- window.activateScreen=(id)=>activate(id,true);
+ window.activateScreen=id=>activate(id,true);
  const hash=location.hash;
  const recovery=hash.includes('access_token=')||hash.includes('type=recovery')||hash.includes('error_description=');
  activate(recovery?'home':(screens[hash.slice(1)]?hash.slice(1):'home'),false);
@@ -1199,6 +1203,11 @@ updateCrimeBudgetUI();
 #globalAccount .global-head{gap:8px}
 .screen-mode .app>section.screen-active#globalAccount{min-height:0!important;height:auto!important;display:block!important}
 @media(max-width:700px){.global-launch{grid-template-columns:1fr;min-height:0;text-align:center;padding:26px 20px}.global-launch-orbit{width:112px;grid-row:1}.global-launch-actions,.global-launch-tags{justify-content:center}.global-launch-copy h2{font-size:30px}.global-launch-copy p{font-size:13px}#globalAccount{margin:14px auto!important}.global-launch-link{width:100%}}
+
+/* Hard isolation between feature screens; defeats legacy .creator-card/.portal-screen display rules. */
+main.app > section{display:none!important}
+main.app > section.screen-current{display:block!important}
+main.app > section.screen-current#creatorProfile{display:flex!important}
 </style>
 <script id="admin-orders-script">
 (function(){
