@@ -330,6 +330,13 @@ function endView(){
  const lvl=total>=35?'Reformis ulung':total>=22?'Pengelola handal':total>=10?'Perlu penajaman':'Perlu kaji ulang';
  const logs=S.log, years=logs.map(x=>x.y);
  const optimum=optimizeAllocation(S.res.crime,S.B0);
+ const policyCases=[
+  {name:'Anggaran awal',alloc:{...REF}},
+  {name:'Pilihan mahasiswa',alloc:{...S.log[S.log.length-1].alloc}},
+  {name:'Optimal model',alloc:{...optimum.alloc}}
+ ].map(x=>({name:x.name,alloc:x.alloc,result:calcYear(x.alloc,S.res.crime,S.B0,1,1)}));
+ const policyRows=policyCases.map(x=>'<tr><td>'+x.name+'</td><td>'+x.alloc.P+'/'+x.alloc.J+'/'+x.alloc.H+'/'+x.alloc.C+'</td><td>'+f0(x.result.crime)+'</td><td>'+pc(x.result.D)+'</td><td>'+pc(x.result.load/x.result.cap)+'</td><td>'+bottleneck(x.result).name+'</td></tr>').join('');
+ const bestPolicy=policyCases.slice().sort((a,b)=>(a.result.crime+Math.max(0,a.result.load/a.result.cap-1)*S.B0*.25)-(b.result.crime+Math.max(0,b.result.load/b.result.cap-1)*S.B0*.25))[0];
  const crime=miniChart('Tren kejahatan per 100 ribu',[{name:'Kejahatan',color:'#7db4ff',start:S.B0,values:logs.map(x=>x.c)}],f0);
  const joint=miniChart('Joint Probability · peluang efek jera',[{name:'Efek jera',color:'#5fd39a',start:R0.D,values:logs.map(x=>x.D)}],v=>Math.round(v*100)+'%');
  const capacity=miniChart('Tekanan hunian terhadap kapasitas',[{name:'Beban / kapasitas',color:'#f2b84b',start:1,values:logs.map(x=>x.load/x.cap)}],v=>Math.round(v*100)+'%');
@@ -350,6 +357,7 @@ function endView(){
  +'<div class="label">2. Kinerja rantai peradilan pidana</div>'+joint
  +'<div class="label">3. Kapasitas pemasyarakatan</div>'+capacity
  +'<div class="label">4. Perubahan prioritas anggaran</div>'+allocation
+ +' <div class="label">5. Perbandingan tiga kebijakan · kondisi dan guncangan disamakan</div><div class="news"><p class="small muted">Semua kebijakan diuji satu tahun ke depan dari tingkat kejahatan akhir permainan, tanpa guncangan baru dan dengan parameter model yang sama.</p><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Kebijakan</th><th>P/J/H/C</th><th>Kejahatan</th><th>Joint P.</th><th>Beban lapas</th><th>Hambatan</th></tr></thead><tbody>'+policyRows+'</tbody></table></div><p class="small muted">Kombinasi terbaik menurut fungsi tujuan simulasi: <b>'+bestPolicy.name+'</b>. Fungsi tujuan = proyeksi kejahatan + penalti 25% dari kondisi awal untuk tekanan lapas di atas kapasitas.</p></div>'
  +'<div class="news"><b>Rekomendasi alokasi model (uji kontrafaktual)</b><p class="small muted">Dengan kondisi akhir dan skenario tanpa guncangan baru, kombinasi yang meminimalkan indeks tujuan simulasi adalah:</p><div class="split"><div class="box"><b>'+optimum.alloc.P+' / '+optimum.alloc.J+' / '+optimum.alloc.H+' / '+optimum.alloc.C+'</b><span>Polisi / Jaksa / Hakim / Pemasyarakatan</span></div><div class="box"><b>'+f0(optimum.result.crime)+'</b><span>Proyeksi kejahatan per 100 ribu</span></div></div><p class="small muted">Pembanding ini mengevaluasi seluruh kombinasi kelipatan 5 poin dengan total 100 poin. Fungsi tujuan memasukkan proyeksi kejahatan dan penalti tekanan kapasitas lapas. Ini rekomendasi model, bukan resep kebijakan empiris.</p></div>'
  +mix
  +'<div class="label">Rekap lima tahun</div><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Tahun</th><th>Kejahatan</th><th>Joint P.</th><th>Beban lapas</th><th>Hambatan utama</th><th>Prediksi</th><th>Peristiwa</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
@@ -369,7 +377,7 @@ document.addEventListener('click',e=>{
   else if(a==='export'){exportCrimeResults()}
   else if(a==='again'){newGame()}
 });
-function exportCrimeResults(){if(!S||!S.log.length)return;const payload={game:'Criminology Lab',exportedAt:new Date().toISOString(),scenario:S.scen,initialCrime:S.B0,finalCrime:S.hist[S.hist.length-1].c,score:S.score,correctPredictions:S.correct,history:S.log,modelRecommendedAllocation:optimizeAllocation(S.res.crime,S.B0).alloc};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hasil-criminology-lab.json';a.click();URL.revokeObjectURL(url);}
+function exportCrimeResults(){if(!S||!S.log.length)return;const payload={game:'Criminology Lab',exportedAt:new Date().toISOString(),scenario:S.scen,initialCrime:S.B0,finalCrime:S.hist[S.hist.length-1].c,score:S.score,correctPredictions:S.correct,history:S.log,modelRecommendedAllocation:optimizeAllocation(S.res.crime,S.B0).alloc,policyComparison:(()=>{const opt=optimizeAllocation(S.res.crime,S.B0);return [{name:'Anggaran awal',alloc:REF},{name:'Pilihan mahasiswa',alloc:S.log[S.log.length-1].alloc},{name:'Optimal model',alloc:opt.alloc}].map(x=>({name:x.name,alloc:x.alloc,result:calcYear(x.alloc,S.res.crime,S.B0,1,1)}))})()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hasil-criminology-lab.json';a.click();URL.revokeObjectURL(url);}
 $('#start').addEventListener('click',newGame);
 showBest();
 </script>
