@@ -301,7 +301,7 @@ function run(){
   const r=calcYear(S.alloc,S.prev,S.B0,mult,noise);
   const down=r.crime<S.prev,ok=(S.pred==='down')===down;r.ok=ok;
   S.res=r;if(ok){S.correct++;S.score+=BONUS}
-  S.hist.push({y:S.year,c:r.crime});S.log.push({y:S.year,c:r.crime,F:r.F,R:r.R,a:r.a,v:r.v,s:r.s,D:r.D,load:r.load,cap:r.cap,over:r.over,alloc:{...S.alloc},ok:ok,ev:S.ev.t});S.stage=3;render();
+  S.hist.push({y:S.year,c:r.crime});S.log.push({y:S.year,c:r.crime,F:r.F,R:r.R,a:r.a,v:r.v,s:r.s,D:r.D,load:r.load,cap:r.cap,over:r.over,bottleneck:bottleneck(r).name,alloc:{...S.alloc},ok:ok,ev:S.ev.t});S.stage=3;render();
 }
 
 function miniChart(title,series,format){
@@ -331,7 +331,8 @@ function endView(){
  ],v=>Math.round(v));
  const maxMix=Math.max(...logs.map(x=>x.F+x.R),1);
  const mix='<div class="label">Komposisi kejahatan baru dan residivis</div>'+logs.map(x=>'<div style="margin:9px 0"><div class="k"><span>Tahun '+x.y+'</span><b>'+f0(x.F+x.R)+'</b></div><div class="stack" style="height:13px"><i style="width:'+(x.F/(x.F+x.R)*100)+'%;background:#7db4ff"></i><i style="width:'+(x.R/(x.F+x.R)*100)+'%;background:#f2b84b"></i></div><div class="small muted">Baru '+f0(x.F)+' · Residivis '+f0(x.R)+'</div></div>').join('');
- const rows=logs.map(x=>'<tr><td>'+x.y+'</td><td>'+f0(x.c)+'</td><td>'+Math.round(x.D*100)+'%</td><td>'+Math.round(x.load/x.cap*100)+'%</td><td>'+(x.ok?'Benar':'Meleset')+'</td><td>'+x.ev+'</td></tr>').join('');
+ const bottleneckCounts=logs.reduce((o,x)=>{o[x.bottleneck]=(o[x.bottleneck]||0)+1;return o},{}),mainBottleneck=Object.entries(bottleneckCounts).sort((a,b)=>b[1]-a[1])[0];
+ const rows=logs.map(x=>'<tr><td>'+x.y+'</td><td>'+f0(x.c)+'</td><td>'+Math.round(x.D*100)+'%</td><td>'+Math.round(x.load/x.cap*100)+'%</td><td>'+x.bottleneck+'</td><td>'+(x.ok?'Benar':'Meleset')+'</td><td>'+x.ev+'</td></tr>').join('');
  $('#stage').innerHTML='<div class="card"><h2>Evaluasi akhir · 5 tahun</h2><p class="small muted">Skenario '+S.scen+' · perjalanan reformasi sistem peradilan pidana</p>'
  +'<div class="split"><div class="box"><b>'+total+'</b><span>Skor akhir · '+lvl+'</span></div><div class="box"><b>'+(red>=0?'−':'+')+Math.abs(red)+'%</b><span>Perubahan kejahatan dari kondisi awal</span></div></div>'
  +'<div class="split"><div class="box"><b>'+S.correct+'/5</b><span>Prediksi tahunan benar</span></div><div class="box"><b>'+Math.round(logs[4].D*100)+'%</b><span>Joint Probability tahun ke-5</span></div></div>'
@@ -340,8 +341,8 @@ function endView(){
  +'<div class="label">3. Kapasitas pemasyarakatan</div>'+capacity
  +'<div class="label">4. Perubahan prioritas anggaran</div>'+allocation
  +mix
- +'<div class="label">Rekap lima tahun</div><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Tahun</th><th>Kejahatan</th><th>Joint P.</th><th>Beban lapas</th><th>Prediksi</th><th>Peristiwa</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
- +'<div class="news"><b>Kesimpulan kebijakan.</b><div class="small muted">Keberhasilan reformasi tidak cukup dinilai dari banyaknya penangkapan. Evaluasi harus membaca Joint Probability, komposisi pelaku baru dan residivis, kapasitas pemasyarakatan, dan kesinambungan alokasi empat lembaga. Hasil ini merupakan simulasi pembelajaran, bukan estimasi empiris.</div></div>'
+ +'<div class="label">Rekap lima tahun</div><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Tahun</th><th>Kejahatan</th><th>Joint P.</th><th>Beban lapas</th><th>Hambatan utama</th><th>Prediksi</th><th>Peristiwa</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+ +'<div class="news"><b>Kesimpulan kebijakan.</b><div class="small muted">Aktor yang paling sering menjadi hambatan selama lima tahun adalah <b>'+mainBottleneck[0]+'</b> ('+mainBottleneck[1]+' dari 5 tahun). Keberhasilan reformasi tidak cukup dinilai dari banyaknya penangkapan. Evaluasi harus membaca Joint Probability, komposisi pelaku baru dan residivis, kapasitas pemasyarakatan, dan kesinambungan alokasi empat lembaga. Hasil ini merupakan simulasi pembelajaran, bukan estimasi empiris.</div></div>'
  +'<div class="row"><button class="btn" type="button" data-act="export">Ekspor hasil (JSON)</button><button class="btn primary" data-act="again">Main lagi</button></div></div>';
 }
 document.addEventListener('click',e=>{
