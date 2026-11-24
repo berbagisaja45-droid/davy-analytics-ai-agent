@@ -313,6 +313,15 @@ function miniChart(title,series,format){
  series.forEach((s,si)=>{const vals=[s.start,...s.values],path=vals.map((v,i)=>(i?'L':'M')+x(i)+' '+y(v)).join(' ');g+='<path d="'+path+'" fill="none" stroke="'+s.color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+vals.map((v,i)=>'<circle cx="'+x(i)+'" cy="'+y(v)+'" r="4" fill="'+s.color+'"/>').join('')+'<text class="ax" x="'+(L+si*190)+'" y="'+(H+12)+'" style="fill:'+s.color+'">'+s.name+'</text>'});
  return '<svg viewBox="0 0 640 250" role="img" aria-label="'+title+'">'+g+'</svg>';
 }
+function optimizeAllocation(prev,B0){
+ let best=null;
+ for(let P=0;P<=100;P+=5)for(let J=0;J<=100-P;J+=5)for(let H=0;H<=100-P-J;H+=5){
+  const C=100-P-J-H,alloc={P,J,H,C},r=calcYear(alloc,prev,B0,1,1);
+  const objective=r.crime+Math.max(0,r.load/r.cap-1)*B0*.25;
+  if(!best||objective<best.objective)best={alloc,result:r,objective};
+ }
+ return best;
+}
 function endView(){
  head();$('#steps').innerHTML='';
  const last=S.hist[S.hist.length-1].c,red=Math.round((1-last/S.B0)*100),total=red+S.correct*BONUS;
@@ -320,6 +329,7 @@ function endView(){
  const best=Number(lsGet('cl_best')||'-9999');if(total>best)lsSet('cl_best',String(total));
  const lvl=total>=35?'Reformis ulung':total>=22?'Pengelola handal':total>=10?'Perlu penajaman':'Perlu kaji ulang';
  const logs=S.log, years=logs.map(x=>x.y);
+ const optimum=optimizeAllocation(S.res.crime,S.B0);
  const crime=miniChart('Tren kejahatan per 100 ribu',[{name:'Kejahatan',color:'#7db4ff',start:S.B0,values:logs.map(x=>x.c)}],f0);
  const joint=miniChart('Joint Probability · peluang efek jera',[{name:'Efek jera',color:'#5fd39a',start:R0.D,values:logs.map(x=>x.D)}],v=>Math.round(v*100)+'%');
  const capacity=miniChart('Tekanan hunian terhadap kapasitas',[{name:'Beban / kapasitas',color:'#f2b84b',start:1,values:logs.map(x=>x.load/x.cap)}],v=>Math.round(v*100)+'%');
@@ -340,6 +350,7 @@ function endView(){
  +'<div class="label">2. Kinerja rantai peradilan pidana</div>'+joint
  +'<div class="label">3. Kapasitas pemasyarakatan</div>'+capacity
  +'<div class="label">4. Perubahan prioritas anggaran</div>'+allocation
+ +'<div class="news"><b>Rekomendasi alokasi model (uji kontrafaktual)</b><p class="small muted">Dengan kondisi akhir dan skenario tanpa guncangan baru, kombinasi yang meminimalkan indeks tujuan simulasi adalah:</p><div class="split"><div class="box"><b>'+optimum.alloc.P+' / '+optimum.alloc.J+' / '+optimum.alloc.H+' / '+optimum.alloc.C+'</b><span>Polisi / Jaksa / Hakim / Pemasyarakatan</span></div><div class="box"><b>'+f0(optimum.result.crime)+'</b><span>Proyeksi kejahatan per 100 ribu</span></div></div><p class="small muted">Pembanding ini mengevaluasi seluruh kombinasi kelipatan 5 poin dengan total 100 poin. Fungsi tujuan memasukkan proyeksi kejahatan dan penalti tekanan kapasitas lapas. Ini rekomendasi model, bukan resep kebijakan empiris.</p></div>'
  +mix
  +'<div class="label">Rekap lima tahun</div><div style="overflow-x:auto"><table style="width:100%;font-size:12px"><thead><tr><th>Tahun</th><th>Kejahatan</th><th>Joint P.</th><th>Beban lapas</th><th>Hambatan utama</th><th>Prediksi</th><th>Peristiwa</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
  +'<div class="news"><b>Kesimpulan kebijakan.</b><div class="small muted">Aktor yang paling sering menjadi hambatan selama lima tahun adalah <b>'+mainBottleneck[0]+'</b> ('+mainBottleneck[1]+' dari 5 tahun). Keberhasilan reformasi tidak cukup dinilai dari banyaknya penangkapan. Evaluasi harus membaca Joint Probability, komposisi pelaku baru dan residivis, kapasitas pemasyarakatan, dan kesinambungan alokasi empat lembaga. Hasil ini merupakan simulasi pembelajaran, bukan estimasi empiris.</div></div>'
@@ -358,7 +369,7 @@ document.addEventListener('click',e=>{
   else if(a==='export'){exportCrimeResults()}
   else if(a==='again'){newGame()}
 });
-function exportCrimeResults(){if(!S||!S.log.length)return;const payload={game:'Criminology Lab',exportedAt:new Date().toISOString(),scenario:S.scen,initialCrime:S.B0,finalCrime:S.hist[S.hist.length-1].c,score:S.score,correctPredictions:S.correct,history:S.log};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hasil-criminology-lab.json';a.click();URL.revokeObjectURL(url);}
+function exportCrimeResults(){if(!S||!S.log.length)return;const payload={game:'Criminology Lab',exportedAt:new Date().toISOString(),scenario:S.scen,initialCrime:S.B0,finalCrime:S.hist[S.hist.length-1].c,score:S.score,correctPredictions:S.correct,history:S.log,modelRecommendedAllocation:optimizeAllocation(S.res.crime,S.B0).alloc};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hasil-criminology-lab.json';a.click();URL.revokeObjectURL(url);}
 $('#start').addEventListener('click',newGame);
 showBest();
 </script>
