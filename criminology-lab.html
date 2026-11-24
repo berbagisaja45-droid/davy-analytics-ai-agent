@@ -70,6 +70,7 @@ details ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
 .ctl button:focus-visible{outline:2px solid var(--warn)}
 .ctl output{min-width:34px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
 .left{font-weight:600;text-align:center;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.indicator-info{margin-top:7px;padding:7px 9px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:8px}.indicator-info summary{font-size:12px;color:var(--accent);font-weight:700}.indicator-info p{margin:6px 0}
 .ind{display:flex;flex-direction:column;gap:10px}
 .ind div.k{display:flex;justify-content:space-between;font-size:14px}
 .stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bg)}
@@ -251,15 +252,33 @@ function resultView(st){
   +'<div><span class="badge '+(ok?'good':'bad')+'">Prediksi '+(ok?'benar (+5)':'meleset')+'</span> <span class="badge warn">'+S.ev.t+'</span></div>'
   +'<div class="label">Asal kejahatan</div><div class="stack" role="img" aria-label="Kejahatan baru '+wf+' persen, residivis '+(100-wf)+' persen"><i style="width:'+wf+'%;background:var(--accent)"></i><i style="width:'+(100-wf)+'%;background:var(--warn)"></i></div>'
   +'<div class="row small"><span><span style="color:var(--accent)">■</span> Pelaku baru '+f0(r.F)+' ('+wf+'%)</span><span><span style="color:var(--warn)">■</span> Residivis '+f0(r.R)+' ('+(100-wf)+'%)</span></div>'
-  +'<div class="label">Indikator sistem</div><div class="ind">'+ind('Kepastian ditangkap',r.a)+ind('Kepastian dihukum',r.v)+ind('Kecepatan putusan',r.s)+ind('Beban lapas terhadap kapasitas',Math.min(1.5,r.load/r.cap),r.load/r.cap>1)+'</div>'
-  +'<p class="small muted">Efek jera tahun ini: <b>'+pc(r.D)+'</b> (kepastian ditangkap × dihukum × kecepatan putusan). Joint Probability dihitung sebagai perkalian peluang bersyarat pada tiga mata rantai sistem peradilan.</p>'
+  +'<div class="label">Indikator sistem · tekan “Mengapa?” untuk melihat dasar angka</div><div class="ind">'+ind('Kepastian ditangkap',r.a,false,indicatorExplain('police'))+ind('Kepastian dihukum',r.v,false,indicatorExplain('prosecutor'))+ind('Kecepatan putusan',r.s,false,indicatorExplain('judge'))+ind('Beban lapas terhadap kapasitas',Math.min(1.5,r.load/r.cap),r.load/r.cap>1,indicatorExplain('prison'))+'</div>'
+  +'<p class="small muted">Efek jera tahun ini: <b>'+pc(r.D)+'</b> (kepastian ditangkap × dihukum × kecepatan putusan). Joint Probability dihitung sebagai perkalian peluang pada tiga mata rantai sistem peradilan.</p><details class="indicator-info"><summary>Bagaimana Joint Probability dihitung?</summary><div class="small muted"><p><code>JP = P(tangkap) × P(dihukum) × P(putusan tepat waktu)</code></p><p>Dengan anggaran tahun ini: '+pc(r.a)+' × '+pc(r.v)+' × '+pc(r.s)+' = <b>'+pc(r.D)+'</b>.</p><p>Dalam model, semakin besar peluang perkara melewati seluruh rantai, semakin kuat potensi efek jera. Angka ini adalah parameter pembelajaran, bukan estimasi empiris Indonesia.</p></div></details>'
   +'<div class="news"><b>Catatan kebijakan</b><div class="small muted">'+advice(r)+'</div></div>'
   +'<div class="label">Tren kejahatan</div>'+chart()
   +'<button class="btn primary" data-act="next">'+(S.year>=YEARS?'Lihat ringkasan':'Tahun berikutnya')+'</button></div>';
 }
-function ind(name,v,bad){
+function indicatorExplain(key){
+ const a=S.alloc;
+ if(key==='police'){
+  const value=0.10+0.60*a.P/(a.P+25);
+  return '<b>Asal angka: anggaran Polisi ('+a.P+' poin)</b><p>Model mengasumsikan peluang dasar 10%, ditambah komponen yang meningkat seiring alokasi Polisi.</p><p><code>P(tangkap) = 0,10 + 0,60 × P/(P + 25)</code></p><p>Perhitungan: 0,10 + 0,60 × '+a.P+'/('+a.P+' + 25) = <b>'+pc(value)+'</b>.</p><p>Makna: peluang pelaku diproses pada mata rantai penangkapan dalam simulasi.</p>';
+ }
+ if(key==='prosecutor'){
+  const value=0.30+0.60*a.J/(a.J+25);
+  return '<b>Asal angka: anggaran Jaksa ('+a.J+' poin)</b><p>Model menetapkan peluang dasar 30%, lalu menambahkan komponen yang dipengaruhi alokasi Jaksa.</p><p><code>P(dihukum) = 0,30 + 0,60 × J/(J + 25)</code></p><p>Perhitungan: 0,30 + 0,60 × '+a.J+'/('+a.J+' + 25) = <b>'+pc(value)+'</b>.</p><p>Makna: peluang perkara yang masuk rantai penuntutan berlanjut sampai menghasilkan hukuman dalam model.</p>';
+ }
+ if(key==='judge'){
+  const value=0.40+0.60*a.H/(a.H+25);
+  return '<b>Asal angka: anggaran Hakim ('+a.H+' poin)</b><p>Model menetapkan tingkat dasar 40%, ditambah komponen yang meningkat sesuai alokasi Hakim.</p><p><code>P(putusan tepat waktu) = 0,40 + 0,60 × H/(H + 25)</code></p><p>Perhitungan: 0,40 + 0,60 × '+a.H+'/('+a.H+' + 25) = <b>'+pc(value)+'</b>.</p><p>Makna: indeks peluang proses menghasilkan putusan secara tepat waktu dalam simulasi, bukan ukuran mutu putusan hakim.</p>';
+ }
+ const cap=Math.max(0.3,(a.C+10)/(REF.C+10));
+ const load=(ind4(a).Pr*S.prev)/(R0.Pr*S.B0);
+ return '<b>Asal angka: anggaran Pemasyarakatan ('+a.C+' poin)</b><p>Indikator ini membandingkan tekanan beban terhadap kapasitas model.</p><p><code>Indeks kapasitas = (C + 10)/(C awal + 10)</code></p><p><code>Rasio beban = indeks beban / indeks kapasitas</code></p><p>Perhitungan tahun ini: indeks beban '+load.toFixed(2)+' ÷ indeks kapasitas '+cap.toFixed(2)+' = <b>'+pc(load/cap)+'</b>.</p><p>Di atas 100% berarti tekanan beban melampaui kapasitas acuan model. Ini indeks simulasi, bukan persentase hunian lapas aktual.</p>';
+}
+function ind(name,v,bad,detail){
   const w=Math.round(Math.min(1.5,v)/1.5*100);
-  return '<div><div class="k"><span>'+name+'</span><b>'+pc(v)+'</b></div><div class="bar"><i style="width:'+w+'%;background:var(--'+(bad?'bad':'accent')+')"></i></div></div>';
+  return '<div><div class="k"><span>'+name+'</span><b>'+pc(v)+'</b></div><div class="bar"><i style="width:'+w+'%;background:var(--'+(bad?'bad':'accent')+')"></i></div><details class="indicator-info"><summary>Mengapa angka ini?</summary><div class="small muted">'+detail+'</div></details></div>';
 }
 
 function chart(){
