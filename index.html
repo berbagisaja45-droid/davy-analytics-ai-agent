@@ -1375,4 +1375,37 @@ $('adminOrdersBody').addEventListener('click',async e=>{
 </script>
 
 
+<script id="isolated-feature-screen-controller">
+(function(){
+ const map={home:['home'],globalAccount:['globalAccount'],creatorProfile:['creatorProfile'], 'materi-lengkap':['materi-lengkap'],dashboardHub:['dashboardHub'],interactiveGames:['interactiveGames'],agents:['agents'],catalog:['catalog','orderSection'],orderAdminDashboard:['orderAdminDashboard']};
+ const all=[...document.querySelectorAll('main.app > section')];
+ const nav=document.querySelector('main.app > nav.main-nav');
+ if(!nav||!all.length)return;
+ const links=[...nav.querySelectorAll('a[href^="#"]')];
+ function render(id,change){
+  if(!map[id])id='home';
+  all.forEach(s=>{s.style.setProperty('display','none','important');s.classList.remove('screen-active','screen-current');});
+  (map[id]||[]).forEach(key=>{
+   const el=document.getElementById(key);
+   if(el){el.style.setProperty('display',key==='creatorProfile'?'flex':'block','important');el.classList.add('screen-active','screen-current');}
+  });
+  links.forEach(a=>{const active=a.hash==='#'+id;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  document.body.classList.add('screen-mode');
+  document.body.classList.toggle('screen-home',id==='home');
+  document.body.classList.toggle('screen-creator',id==='creatorProfile');
+  if(change)history.pushState({screen:id},'', '#'+id);
+  window.scrollTo(0,0);
+ }
+ document.addEventListener('click',function(e){
+  const a=e.target.closest('main.app > nav.main-nav a[href^="#"]');
+  if(!a)return;
+  e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+  render(a.hash.slice(1),true);
+ },true);
+ window.addEventListener('popstate',()=>render(location.hash.slice(1),false));
+ window.activateScreen=id=>render(id,true);
+ const h=location.hash.slice(1);
+ render(map[h]?h:'home',false);
+})();
+</script>
 </body></html>
