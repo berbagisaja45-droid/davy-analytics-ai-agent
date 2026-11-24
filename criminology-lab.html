@@ -196,9 +196,10 @@ function render(){
     drawAlloc();
   }else if(S.stage===2){
     st.innerHTML='<div class="card"><h2>Prediksi tahun ke-'+S.year+'</h2><p class="muted">Dibanding tahun lalu ('+f0(S.prev)+' per 100 ribu), apakah tingkat kejahatan akan turun atau naik? Prediksi dikunci sebelum hasil dibuka.</p>'
+    +'<div class="news"><b>Anggaran sudah dikunci.</b><div class="small muted">Jika menemukan kesalahan alokasi, Anda masih dapat kembali dan memperbaikinya sebelum simulasi dijalankan. Prediksi yang belum dijalankan akan direset.</div></div>'
     +'<div class="choice"><button class="opt" data-act="pred" data-v="down" aria-pressed="'+(S.pred==='down')+'"><strong>Turun</strong><span class="small muted">Lebih rendah dari tahun lalu</span></button>'
     +'<button class="opt" data-act="pred" data-v="up" aria-pressed="'+(S.pred==='up')+'"><strong>Naik</strong><span class="small muted">Lebih tinggi dari tahun lalu</span></button></div>'
-    +'<button class="btn primary" data-act="run" '+(S.pred?'':'disabled')+'>Kunci prediksi dan jalankan</button></div>';
+    +'<div class="row"><button class="btn" type="button" data-act="backBudget">← Perbaiki anggaran</button><button class="btn primary" data-act="run" '+(S.pred?'':'disabled')+'>Kunci prediksi dan jalankan</button></div></div>';
   }else{resultView(st)}
 }
 
@@ -330,6 +331,7 @@ document.addEventListener('click',e=>{
   else if(a==='to1'){S.stage=1;render()}
   else if(a==='adj'){const k=b.dataset.k,d=Number(b.dataset.d);transferBudget(k,d);drawAlloc();const nb=document.querySelector('[data-act="adj"][data-k="'+k+'"][data-d="'+d+'"]');if(nb)nb.focus()}
   else if(a==='to2'){S.stage=2;S.pred=null;render()}
+  else if(a==='backBudget'){S.stage=1;S.pred=null;render()}
   else if(a==='pred'){S.pred=b.dataset.v;render()}
   else if(a==='run'){run()}
   else if(a==='next'){if(S.year>=YEARS){S.stage=4;endView()}else{S.year++;S.prev=S.res.crime;S.ev=pickEvent(S.year);S.pred=null;S.res=null;S.stage=0;render()}}
