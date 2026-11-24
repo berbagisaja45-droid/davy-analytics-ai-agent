@@ -1137,6 +1137,12 @@ updateCrimeBudgetUI();
 #orderAdminDashboard .admin-orders-table input,#orderAdminDashboard .admin-orders-table select{max-width:155px;padding:7px;border:1px solid #cbd5e1;border-radius:7px}
 #orderAdminDashboard .admin-orders-table .btn{padding:7px 10px;font-size:11px}
 @media(max-width:700px){#orderAdminDashboard .admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#orderAdminDashboard .head h3{font-size:20px}}
+
+/* HARD SCREEN ROUTER: exactly one top-level content screen at a time */
+main.app > section{display:none!important}
+main.app > section.screen-current{display:block!important}
+main.app > section.screen-current.creator-card{display:flex!important}
+main.app > section.screen-current#home{display:block!important}
 </style>
 <script id="admin-orders-script">
 (function(){
@@ -1300,6 +1306,38 @@ $('adminOrdersBody').addEventListener('click',async e=>{
  });
  client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)setTimeout(()=>loadProfile(session.user),0);if(event==='SIGNED_OUT')toggle(false);});
  refresh();
+})();
+</script>
+
+<script id="hard-screen-router">
+(function(){
+ function init(){
+  const app=document.querySelector('main.app');
+  const nav=app&&app.querySelector('.main-nav');
+  if(!app||!nav)return;
+  const links=[...nav.querySelectorAll('a[href^="#"]')];
+  const sections=[...app.querySelectorAll(':scope > section')];
+  const ids=new Set(sections.map(s=>s.id).filter(Boolean));
+  function show(id,updateUrl){
+   if(!ids.has(id))id='home';
+   sections.forEach(s=>{s.classList.toggle('screen-current',s.id===id);s.classList.toggle('screen-active',s.id===id);});
+   links.forEach(a=>{const on=a.getAttribute('href')==='#'+id;a.classList.toggle('active',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+   document.body.classList.add('screen-mode');
+   document.body.classList.toggle('screen-home',id==='home');
+   document.body.classList.toggle('screen-creator',id==='creatorProfile');
+   if(updateUrl)history.pushState({screen:id},'', '#'+id);
+   window.scrollTo(0,0);
+  }
+  nav.addEventListener('click',function(e){
+   const a=e.target.closest('a[href^="#"]');
+   if(!a||!nav.contains(a))return;
+   e.preventDefault();e.stopPropagation();show(a.getAttribute('href').slice(1),true);
+  },true);
+  window.addEventListener('popstate',()=>show(location.hash.slice(1)||'home',false));
+  window.activateScreen=(id)=>show(id,true);
+  show(location.hash.slice(1)||'home',false);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
 </body></html>
