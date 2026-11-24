@@ -297,4 +297,80 @@ $('#start').addEventListener('click',newGame);
 showBest();
 </script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+#global-game-account-bridge{max-width:720px;margin:0 auto 14px;padding:13px 15px;border:1px solid #6d87ad;border-radius:12px;background:#edf4fb;color:#17324f;font:13px/1.5 Inter,system-ui,sans-serif}
+#global-game-account-bridge input{max-width:100%;padding:9px;border:1px solid #b8c8d9;border-radius:8px}
+#global-game-account-bridge button{padding:9px 13px;border:0;border-radius:8px;background:#174d79;color:white;font-weight:700}
+#global-game-account-bridge .g-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#global-game-account-bridge .g-row input{flex:1 1 180px}
+</style>
+<section id="global-game-account-bridge" aria-live="polite">
+ <b>🌐 Akun Global / Global Account</b>
+ <div id="ggb-status">Memeriksa sesi akun… / Checking account session…</div>
+ <form id="ggb-login" hidden>
+  <div class="g-row"><input id="ggb-email" type="email" autocomplete="username" placeholder="Email" required><input id="ggb-password" type="password" autocomplete="current-password" placeholder="Password" required></div>
+  <div class="g-row"><button type="submit">Masuk / Sign in</button><a href="./index.html#globalAccount" style="align-self:center;color:#174d79">Buat akun / Create account</a></div>
+ </form>
+</section>
+<script id="global-game-account-bridge">
+(function(){
+ const URL='https://rurfluvlcnexxuwfngaj.supabase.co';
+ const KEY='sb_publishable_7sAD1TO-uxvyTRprr1nvaw_06pyi737';
+ const GAME='mudharabah';
+ const $=id=>document.getElementById(id),status=$('ggb-status'),form=$('ggb-login');
+ if(!window.supabase){status.textContent='Layanan akun belum dapat dimuat. / Account service unavailable.';return;}
+ const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ let user=null,sessionId=null,started=false,saving=false;
+ function showLogin(){form.hidden=false;}
+ async function init(){
+  const {data,error}=await db.auth.getSession();
+  if(error){status.textContent='Gagal memeriksa akun: '+error.message;showLogin();return;}
+  if(data.session){user=data.session.user;status.textContent='Login: '+(user.email||'peserta')+' · Skor sesi akan disimpan ke akun global.';}
+  else {status.textContent='Silakan masuk dengan akun global yang sama untuk menyimpan hasil permainan. / Sign in with your global account to save results.';showLogin();}
+ }
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();const b=form.querySelector('button');b.disabled=true;status.textContent='Memproses login…';
+  const {data,error}=await db.auth.signInWithPassword({email:$('ggb-email').value.trim(),password:$('ggb-password').value});
+  b.disabled=false;
+  if(error){status.textContent='Login gagal: '+error.message;return;}
+  user=data.user;form.hidden=true;status.textContent='Login: '+user.email+' · Akun global aktif.';
+ });
+ async function begin(){
+  if(!user||started)return;
+  const {data,error}=await db.from('global_game_sessions').insert({user_id:user.id,game_code:GAME,session_mode:'practice',language:(document.documentElement.lang||'id').startsWith('en')?'en':'id',status:'started',metadata:{source:'game-page'}}).select('id').single();
+  if(error){status.textContent='Sesi tidak tersimpan: '+error.message;return;}
+  sessionId=data.id;started=true;status.textContent='Sesi permainan tersimpan · ID '+sessionId.slice(0,8);
+ }
+ async function complete(){
+  if(!user||!sessionId||saving)return;
+  saving=true;
+  const state=window.S;
+  const rounds=(state.log||[]);
+  const score=Number(state.score)||0;
+  const rows=rounds.map((r,i)=>({session_id:sessionId,round_number:i+1,round_type:'bayesian_mudharabah',response_data:r,score:Number(r.score)||null}));
+  if(rows.length){const {error:re}=await db.from('global_game_rounds').insert(rows);if(error){status.textContent='Jawaban ronde gagal disimpan: '+error.message;saving=false;return;}}
+  const {error:se}=await db.from('global_game_sessions').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',sessionId).eq('user_id',user.id);
+  if(se){status.textContent='Sesi selesai, tetapi status belum tersimpan: '+se.message;saving=false;return;}
+  const {error:res}=await db.from('global_game_results').insert({session_id:sessionId,user_id:user.id,game_code:GAME,total_score:Math.max(0,score),rounds_completed:rounds.length,is_verified:false});
+  if(res){status.textContent='Sesi tersimpan, tetapi hasil akhir gagal dicatat: '+res.message;saving=false;return;}
+  status.textContent='✓ Hasil tersimpan di akun global. Skor menunggu verifikasi fasilitator.';
+  started=false;sessionId=null;saving=false;
+ }
+ document.addEventListener('click',e=>{
+  const t=e.target.closest('#start');
+  if(t)setTimeout(begin,0);
+  const act=e.target.closest('[data-act]');
+  if(act&&act.dataset.act==='next')setTimeout(()=>{
+   const state=window.S;
+   if(state&&state.stage===4)complete();
+  },0);
+  if(act&&act.dataset.act==='again')setTimeout(()=>{sessionId=null;started=false;begin()},0);
+ });
+ db.auth.onAuthStateChange((event,s)=>{if(event==='SIGNED_OUT'){user=null;status.textContent='Anda keluar dari akun global.';showLogin();}});
+ init();
+})();
+</script>
+
 </body></html>
