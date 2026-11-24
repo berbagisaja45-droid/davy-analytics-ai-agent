@@ -200,6 +200,22 @@ function resultView(st,c){
   else if(r.eff==='high')why=c.av.n+' bertipe Oportunis, tetapi bagiannya ('+share+'%) masih di atas batas 50%, sehingga kerja keras tetap menguntungkan baginya.';
   else why=c.av.n+' bertipe Oportunis. Bagiannya hanya '+share+'%. Di bawah 50%, tambahan peluang berhasil tidak sebanding dengan biaya Rp'+P.cost+' juta, jadi ia memilih santai (moral hazard).';
   const evH=bankEV(n,'high'),evL=bankEV(n,'low'),pbe=solvePBE(c.q),playerGap=Math.abs(n-pbe.n)<.026;
+  const a=P.acc,prior=P.prior,k=c.k;
+  const likeA=Math.pow(a,k)*Math.pow(1-a,2-k),likeO=Math.pow(1-a,k)*Math.pow(a,2-k);
+  const bayesNum=prior*likeA,bayesDen=bayesNum+(1-prior)*likeO;
+  const bayesSteps='<p><b>Langkah 1 — Prior.</b> Sebelum membaca petunjuk, peluang nasabah Amanah = '+Math.round(prior*100)+'%; Oportunis = '+Math.round((1-prior)*100)+'%.</p>'
+   +'<p><b>Langkah 2 — Sinyal.</b> Dari dua petunjuk, '+k+' petunjuk mengarah ke Amanah dan '+(2-k)+' ke Oportunis. Akurasi tiap petunjuk '+Math.round(a*100)+'%.</p>'
+   +'<p><b>Langkah 3 — Bayes.</b> P(Amanah | sinyal) = [prior × likelihood Amanah] ÷ [prior × likelihood Amanah + peluang Oportunis × likelihood Oportunis].</p>'
+   +'<p><code>= ('+prior.toFixed(2)+' × '+likeA.toFixed(4)+') ÷ ('+bayesNum.toFixed(4)+' + '+((1-prior)*likeO).toFixed(4)+') = '+Math.round(c.q*100)+'%</code></p>'
+   +'<p>Jadi keyakinan bank setelah membaca petunjuk adalah <b>'+Math.round(c.q*100)+'% Amanah</b> dan '+Math.round((1-c.q)*100)+'% Oportunis. Ini belief probabilistik, bukan kepastian tipe nasabah.</p>';
+  const payoffSteps='<p><b>Harapan laba bank</b> = peluang berhasil × nisbah bank × laba usaha − peluang gagal × kerugian bank.</p>'
+   +'<p><code>EV kerja keras = 0,80 × '+n.toFixed(2)+' × 40 − 0,20 × 35 = '+evH.toFixed(2)+' juta</code></p>'
+   +'<p><code>EV kerja santai = 0,40 × '+n.toFixed(2)+' × 40 − 0,60 × 35 = '+evL.toFixed(2)+' juta</code></p>'
+   +'<p>Nilai harapan adalah rata-rata tertimbang berdasarkan peluang, bukan laba yang pasti diterima pada satu ronde. Hasil aktual ronde ini tetap bergantung pada undian berhasil/gagal.</p>';
+  const effortSteps='<p>Tambahan peluang berhasil karena kerja keras = 80% − 40% = 40 poin persentase.</p>'
+   +'<p><code>Tambahan manfaat mudharib = 0,40 × (1 − '+n.toFixed(2)+') × Rp40 juta = Rp'+((0.4*(1-n)*40).toFixed(2))+' juta.</code></p>'
+   +'<p>Biaya kerja keras = Rp'+P.cost+' juta. '+(c.type==='Amanah'?'Tipe Amanah dalam model selalu memilih kerja keras.':((0.4*(1-n)*40)>=P.cost?'Manfaat tambahan menutup biaya, sehingga Oportunis memilih kerja keras.':'Manfaat tambahan lebih kecil daripada biaya, sehingga Oportunis memilih kerja santai (moral hazard).'))+'</p>'
+   +'<p>Titik impas terjadi saat 0,40 × (1 − nisbah bank) × 40 = 8, yaitu nisbah bank 50%. Ambang ini berasal dari parameter ilustratif model.</p>';
   st.innerHTML='<div class="card"><div class="who"><div class="av" aria-hidden="true">'+c.av.e+'</div><div><h2>'+c.av.n+' memilih '+effTxt+'</h2>'
   +'<span class="badge '+(r.ok?'good':'bad')+'">Prediksi '+(r.ok?'benar (+5)':'meleset')+'</span> <span class="badge info">Tipe: '+c.type+'</span></div></div>'
   +'<p>'+why+'</p>'
@@ -208,6 +224,10 @@ function resultView(st,c){
   +'<div class="scroll"><table><thead><tr><th>Harapan laba bank pada nisbah '+Math.round(n*100)+'%</th><th>Rp juta</th></tr></thead><tbody>'
   +'<tr><td>Jika nasabah kerja keras</td><td>'+sg(evH)+'</td></tr><tr><td>Jika nasabah kerja santai</td><td>'+sg(evL)+'</td></tr></tbody></table></div>'
   +'<div class="pbe-panel"><b>Analisis Perfect Bayesian Equilibrium</b><p>Prior Amanah: '+Math.round(P.prior*100)+'% → posterior setelah sinyal: <b>'+Math.round(c.q*100)+'%</b>. Expected payoff bank pada nisbah pilihan: <b>'+rp(equilibrium(n,c.q))+'</b>.</p><p>Nisbah optimal bank menurut PBE (grid 5%): <b>'+Math.round(pbe.n*100)+'%</b>; expected payoff: <b>'+rp(pbe.ev)+'</b>. '+(playerGap?'Pilihan Anda berada pada nisbah equilibrium dalam toleransi 2,5 poin persentase (+5 poin).':'Pilihan Anda berbeda dari strategi optimal bank menurut PBE.')+'</p><p><b>Strategi respons PBE:</b> Amanah → '+(pbe.effortA==='high'?'high effort':'low effort')+'; Oportunis → '+(pbe.effortO==='high'?'high effort':'low effort')+'.</p><p>Bonus PBE ronde ini: <b>'+(r.aligned?'+5 poin':'0 poin')+'</b>.</p><p class="small muted">Respons nasabah dihitung optimal: Amanah memilih high effort; Oportunis memilih high effort hanya jika tambahan expected share menutup biaya usaha. PBE menggabungkan strategi bank yang optimal berdasarkan posterior sinyal, respons effort optimal untuk masing-masing tipe nasabah setelah mengamati nisbah, dan belief bank yang konsisten dengan aturan Bayes. Bank menerima sinyal privat; nasabah mengetahui tipe dirinya sendiri.</p></div>'
+  +'<details><summary>Mengapa posterior belief menjadi '+Math.round(c.q*100)+'%?</summary>'+bayesSteps+'</details>'
+  +'<details><summary>Bagaimana harapan laba bank dihitung?</summary>'+payoffSteps+'</details>'
+  +'<details><summary>Mengapa nasabah memilih kerja keras atau santai?</summary>'+effortSteps+'</details>'
+  +'<details><summary>Bagaimana membaca hasil aktual dan pembagian hasil?</summary><p>Modal bank Rp'+P.K+' juta. Jika usaha berhasil, laba Rp'+P.pi+' juta dibagi: bank menerima '+Math.round(n*100)+'% × Rp'+P.pi+' juta = '+rp(r.bank)+'; nasabah menerima '+Math.round((1-n)*100)+'% × Rp'+P.pi+' juta, lalu dikurangi biaya upaya Rp'+(r.eff==='high'?P.cost:0)+' juta = '+rp(r.mud)+'. Jika usaha gagal, model mencatat kerugian bank Rp'+P.loss+' juta; nasabah tidak menerima bagi hasil dan biaya upaya tetap diperhitungkan bila ia memilih kerja keras. Penyederhanaan risiko dan kelalaian dijelaskan pada panduan akad.</p></details>'
   +'<div class="label">Harapan laba bank menurut nisbah</div>'+chart(n,c.type)
   +'<p class="small muted">Kurva Oportunis patah di nisbah 50%: di atas titik itu nasabah beralih ke kerja santai dan harapan laba bank jatuh. Petunjuk memberi peluang Amanah '+Math.round(c.q*100)+'%, sedangkan tipe aslinya adalah '+c.type+'.</p>'
   +'<button class="btn primary" data-act="next">'+(S.r>=P.rounds?'Lihat ringkasan':'Ronde berikutnya')+'</button></div>';
