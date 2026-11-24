@@ -163,12 +163,19 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const f0=x=>Math.round(x).toString();
 const pc=x=>Math.round(x*100)+'%';
 
-function pickEvent(){let t=EVENTS.reduce((s,e)=>s+e.w,0)*Math.random();for(const e of EVENTS){t-=e.w;if(t<=0)return e}return EVENTS[0]}
+const YEAR_EVENTS=[
+ {t:'Tahun 1 · Konsolidasi awal',m:1,d:'Pemerintah memulai reformasi. Petakan titik lemah rantai penegakan dan bangun koordinasi empat lembaga.'},
+ {t:'Tahun 2 · Tekanan ekonomi',m:1.15,d:'Krisis ekonomi regional meningkatkan tekanan kejahatan. Kebijakan perlu menyeimbangkan penegakan dan pencegahan sosial.'},
+ {t:'Tahun 3 · Kejahatan terorganisasi',m:1.10,d:'Peredaran narkoba dan jaringan kejahatan meningkat. Perkuat kualitas penyidikan, penuntutan, dan proses peradilan.'},
+ {t:'Tahun 4 · Intervensi sosial',m:0.90,d:'Program padat karya dan reintegrasi sosial mulai menurunkan tekanan kejahatan. Evaluasi pembinaan dan pencegahan residivisme.'},
+ {t:'Tahun 5 · Evaluasi reformasi',m:1,d:'Pemerintah mengevaluasi keberlanjutan reformasi, kapasitas lembaga, kepastian hukum, dan hasil akhir lima tahun.'}
+];
+function pickEvent(year){return YEAR_EVENTS[year-1]||YEAR_EVENTS[0]}
 function showBest(){const b=lsGet('cl_best');$('#best').textContent=b?('Skor terbaik di perangkat ini: '+b):''}
 
 function newGame(){
   const B0=BASE[scen];
-  S={scen,B0,year:1,prev:B0,alloc:{P:REF.P,J:REF.J,H:REF.H,C:REF.C},stage:0,score:0,correct:0,hist:[{y:0,c:B0}],ev:pickEvent(),pred:null,res:null,log:[]};
+  S={scen,B0,year:1,prev:B0,alloc:{P:REF.P,J:REF.J,H:REF.H,C:REF.C},stage:0,score:0,correct:0,hist:[{y:0,c:B0}],ev:pickEvent(1),pred:null,res:null,log:[]};
   $('#intro').hidden=true;$('#game').hidden=false;$('#stats').hidden=false;render();
 }
 
@@ -274,7 +281,7 @@ function run(){
   const r=calcYear(S.alloc,S.prev,S.B0,mult,noise);
   const down=r.crime<S.prev,ok=(S.pred==='down')===down;r.ok=ok;
   S.res=r;if(ok){S.correct++;S.score+=BONUS}
-  S.hist.push({y:S.year,c:r.crime});S.log.push({y:S.year,c:r.crime,ok:ok,ev:S.ev.t});S.stage=3;render();
+  S.hist.push({y:S.year,c:r.crime});S.log.push({y:S.year,c:r.crime,F:r.F,R:r.R,a:r.a,v:r.v,s:r.s,D:r.D,load:r.load,cap:r.cap,over:r.over,alloc:{...S.alloc},ok:ok,ev:S.ev.t});S.stage=3;render();
 }
 
 function miniChart(title,series,format){
@@ -325,7 +332,7 @@ document.addEventListener('click',e=>{
   else if(a==='to2'){S.stage=2;S.pred=null;render()}
   else if(a==='pred'){S.pred=b.dataset.v;render()}
   else if(a==='run'){run()}
-  else if(a==='next'){if(S.year>=YEARS){S.stage=4;endView()}else{S.year++;S.prev=S.res.crime;S.ev=pickEvent();S.pred=null;S.res=null;S.stage=0;render()}}
+  else if(a==='next'){if(S.year>=YEARS){S.stage=4;endView()}else{S.year++;S.prev=S.res.crime;S.ev=pickEvent(S.year);S.pred=null;S.res=null;S.stage=0;render()}}
   else if(a==='export'){exportCrimeResults()}
   else if(a==='again'){newGame()}
 });
