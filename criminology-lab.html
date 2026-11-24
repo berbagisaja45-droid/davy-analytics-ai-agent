@@ -244,7 +244,7 @@ function resultView(st){
   +'<div class="label">Asal kejahatan</div><div class="stack" role="img" aria-label="Kejahatan baru '+wf+' persen, residivis '+(100-wf)+' persen"><i style="width:'+wf+'%;background:var(--accent)"></i><i style="width:'+(100-wf)+'%;background:var(--warn)"></i></div>'
   +'<div class="row small"><span><span style="color:var(--accent)">■</span> Pelaku baru '+f0(r.F)+' ('+wf+'%)</span><span><span style="color:var(--warn)">■</span> Residivis '+f0(r.R)+' ('+(100-wf)+'%)</span></div>'
   +'<div class="label">Indikator sistem</div><div class="ind">'+ind('Kepastian ditangkap',r.a)+ind('Kepastian dihukum',r.v)+ind('Kecepatan putusan',r.s)+ind('Beban lapas terhadap kapasitas',Math.min(1.5,r.load/r.cap),r.load/r.cap>1)+'</div>'
-  +'<div class="label">Joint Probability: rantai efek jera</div>'+jointPanel(r)+'<p class="small muted">P(efek jera) = P(tertangkap) × P(dituntut hingga dihukum | tertangkap) × P(putusan tepat waktu | perkara diproses). Model ini memakai perkalian peluang bersyarat sebagai penyederhanaan pembelajaran.</p>'
+  +'<p class="small muted">Efek jera tahun ini: <b>'+pc(r.D)+'</b> (kepastian ditangkap × dihukum × kecepatan putusan). Joint Probability dihitung sebagai perkalian peluang bersyarat pada tiga mata rantai sistem peradilan.</p>'
   +'<div class="news"><b>Catatan kebijakan</b><div class="small muted">'+advice(r)+'</div></div>'
   +'<div class="label">Tren kejahatan</div>'+chart()
   +'<button class="btn primary" data-act="next">'+(S.year>=YEARS?'Lihat ringkasan':'Tahun berikutnya')+'</button></div>';
