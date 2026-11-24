@@ -1346,7 +1346,7 @@ $('adminOrdersBody').addEventListener('click',async e=>{
   e.preventDefault();const b=e.submitter;b.disabled=true;setMessage('Membuat akun...');
   const name=$('globalSignupName').value.trim(),email=$('globalSignupEmail').value.trim(),password=$('globalSignupPassword').value,language=$('globalSignupLanguage').value,country=$('globalSignupCountry').value.trim().toUpperCase()||null;
   if(country&&!/^[A-Z]{2}$/.test(country)){setMessage('Kode negara harus dua huruf, misalnya ID atau US.');b.disabled=false;return;}
-  const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name,preferred_language:language,country_code:country}}});
+  const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name,preferred_language:language,country_code:country},emailRedirectTo:'https://davyhendri74-crypto.github.io/davy-analytics-ai-agent/#globalAccount'}});
   if(error)setMessage('Pendaftaran gagal: '+error.message);
   else if(data.session){const {error:pe}=await client.from('global_game_profiles').upsert({user_id:data.user.id,display_name:name,preferred_language:language,country_code:country},{onConflict:'user_id'});setMessage(pe?'Akun dibuat, tetapi profil belum tersimpan: '+pe.message:'Akun berhasil dibuat. Selamat bermain!');await refresh();}
   else setMessage('Pendaftaran diterima. Periksa email untuk konfirmasi, lalu masuk menggunakan akun Anda. Check your email to confirm your account.');
@@ -1370,7 +1370,7 @@ $('adminOrdersBody').addEventListener('click',async e=>{
  $('globalSignOut').addEventListener('click',async()=>{const {error}=await client.auth.signOut();setMessage(error?'Gagal keluar: '+error.message:'Anda telah keluar.');toggle(false);});
  $('globalForgotPassword').addEventListener('click',async()=>{
   const email=$('globalLoginEmail').value.trim();if(!email){setMessage('Masukkan email pada kolom login terlebih dahulu.');return;}
-  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:'https://davyhendri74-crypto.github.io/davy-analytics-ai-agent/#globalAccount'});
   setMessage(error?'Gagal mengirim tautan reset: '+error.message:'Jika email terdaftar, tautan reset password akan dikirim ke email tersebut.');
  });
  client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)setTimeout(()=>loadProfile(session.user),0);if(event==='SIGNED_OUT')toggle(false);});
