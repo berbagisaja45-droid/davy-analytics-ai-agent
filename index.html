@@ -1365,35 +1365,5 @@ $('adminOrdersBody').addEventListener('click',async e=>{
 })();
 </script>
 
-<script id="hard-screen-router">
-(function(){
- function init(){
-  const app=document.querySelector('main.app');
-  const nav=app&&app.querySelector('.main-nav');
-  if(!app||!nav)return;
-  const links=[...nav.querySelectorAll('a[href^="#"]')];
-  const sections=[...app.querySelectorAll(':scope > section')];
-  const ids=new Set(sections.map(s=>s.id).filter(Boolean));
-  function show(id,updateUrl){
-   if(!ids.has(id))id='home';
-   sections.forEach(s=>{s.classList.toggle('screen-current',s.id===id);s.classList.toggle('screen-active',s.id===id);});
-   links.forEach(a=>{const on=a.getAttribute('href')==='#'+id;a.classList.toggle('active',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-   document.body.classList.add('screen-mode');
-   document.body.classList.toggle('screen-home',id==='home');
-   document.body.classList.toggle('screen-creator',id==='creatorProfile');
-   if(updateUrl)history.pushState({screen:id},'', '#'+id);
-   window.scrollTo(0,0);
-  }
-  nav.addEventListener('click',function(e){
-   const a=e.target.closest('a[href^="#"]');
-   if(!a||!nav.contains(a))return;
-   e.preventDefault();e.stopPropagation();show(a.getAttribute('href').slice(1),true);
-  },true);
-  window.addEventListener('popstate',()=>show(location.hash.slice(1)||'home',false));
-  window.activateScreen=(id)=>show(id,true);
-  show(location.hash.slice(1)||'home',false);
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
+
 </body></html>
